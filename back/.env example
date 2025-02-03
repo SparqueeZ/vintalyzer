@@ -1,0 +1,10 @@
+DB_USER=username
+DB_PASSWORD=password
+DB_PORT=3306
+DB_NAME=databaseName
+DB_ADDRESS=databaseAddress
+DB_DIALECT=mysql
+DB_LOGGING=false
+
+JWT_SECRET=secret
+JWT_SECRET_EXPIRATION=1h
