@@ -5,9 +5,9 @@
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-2">
           <svg class="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
           </svg>
-          <h3 class="text-lg font-semibold text-white/90">Ventes</h3>
+          <h3 class="text-lg font-semibold text-white/90">Chiffre d'affaires</h3>
         </div>
       </div>
       
@@ -16,12 +16,14 @@
       </div>
       
       <div class="flex items-baseline">
-        <div class="text-3xl font-bold text-violet-400">
-          {{ store.getVentes.length }}
+        <div class="text-3xl font-bold text-green-500">
+          {{ totalRevenue }}
         </div>
-        <div class="text-xs text-white/50 ml-2">ventes</div>
+        <div class="text-xs text-white/50 ml-2">revenus</div>
       </div>
+
       <hr class="w-full border-none h-[1px] bg-gradient-to-r from-transparent via-violet-500 to-transparent mt-4" />
+
     </div>
   </div>
 </template>
@@ -39,6 +41,15 @@ function formatDate(date: Date) {
   })
 }
 
+function formatMoney(amount: number) {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(amount)
+}
+
 const dateRange = computed(() => {
   const ventes = store.getVentes
   if (!ventes.length) return ''
@@ -48,4 +59,25 @@ const dateRange = computed(() => {
   
   return `${formatDate(firstDate)} - ${formatDate(lastDate)}`
 })
+
+const totalRevenue = computed(() => {
+  const ventes = store.getVentes
+  const total = ventes.reduce((sum, vente) => sum + (parseFloat(vente.prix) || 0), 0)
+  return formatMoney(total)
+})
 </script>
+
+<style scoped>
+.electric-flow {
+  animation: flowRight 2s linear infinite;
+}
+
+@keyframes flowRight {
+  from {
+    left: -50%;
+  }
+  to {
+    left: 100%;
+  }
+}
+</style>

@@ -19,7 +19,19 @@
     <div v-if="result" class="mt-4">
       <h2 class="text-xl mb-2">Résultats de l'analyse :</h2>
       <div class="mb-4">
-        <SalesStats />
+        <div class="flex gap-4">
+          <SalesStats />
+          <TotalStats />
+          <ExpenseStats />
+          <CountrySales />
+          <EngagementStats />
+        </div>
+      </div>
+      <div class="mb-4">
+        <BrandStats />
+      </div>
+      <div class="mb-4">
+        <SalesChart />
       </div>
       <div class="bg-gray-100 p-4 rounded overflow-auto">
         <div class="mb-4">
@@ -197,6 +209,12 @@ import { VintedAnalyzer } from '~/utils/vintedAnalyzer'
 import { concurrentAnalyzer } from '~/utils/concurrentAnalyzer'
 import { useDataStore } from '~/stores/dataStore'
 import SalesStats from '~/components/SalesStats.vue'
+import TotalStats from '~/components/TotalStats.vue'
+import ExpenseStats from '~/components/ExpenseStats.vue'
+import EngagementStats from '~/components/EngagementStats.vue'
+import CountrySales from '~/components/CountrySales.vue'
+import BrandStats from '~/components/BrandStats.vue'
+import SalesChart from '~/components/SalesChart.vue'
 
 const inputText = ref('')
 const concurrentText = ref('')
