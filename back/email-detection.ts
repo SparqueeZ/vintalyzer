@@ -2,6 +2,8 @@ import * as dotenv from 'dotenv';
 import { connect, ImapSimpleOptions, ImapSimple } from 'imap-simple';
 import { simpleParser } from 'mailparser';
 import chalk from 'chalk';
+import pdfParse from 'pdf-parse';
+import * as fs from 'fs/promises';
 
 dotenv.config();
 
@@ -25,6 +27,26 @@ interface VintedOrder {
     shippingEmail?: any;
     saleAttachments?: any[];
     shippingAttachments?: any[];
+    returnFormInfo?: ReturnFormInfo;
+}
+
+interface ReturnFormInfo {
+    sellerAddress: {
+        name: string;
+        address: string;
+        postalCode: string;
+        city: string;
+        country: string;
+        email: string;
+    };
+    paymentDate: string;
+    orderDetails: {
+        itemName: string;
+        itemPrice: number;
+        shippingCost: number;
+        buyerProtection: number;
+        total: number;
+    };
 }
 
 interface OrderInfo {
@@ -118,6 +140,94 @@ function extractOrderInfo(emailContent: string, orderNumber: string): OrderInfo 
     };
 }
 
+// Extrait les informations du PDF du formulaire de retour
+async function extractReturnFormInfo(attachment: any): Promise<ReturnFormInfo | undefined> {
+    try {
+        const buffer = attachment.content;
+        const data = await pdfParse(buffer);
+        const text = data.text;
+
+        console.log('=== DÉBUT DU TEXTE PDF ===');
+        console.log(text);
+        console.log('=== FIN DU TEXTE PDF ===');
+
+        // Extraction de l'adresse du vendeur
+        const addressMatch = text.match(/Adresse de retour du vendeur :\s*"([^"]+)"\s*([^\n]+)\s*(\d{5})\s+([^\n]+)\s*(France)\s*([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/s);
+        if (!addressMatch) {
+            console.log('Impossible de trouver l\'adresse du vendeur');
+            return undefined;
+        }
+
+        // Extraction de la date de paiement
+        const dateMatch = text.match(/Date de paiement : (\d{4}-\d{2}-\d{2} \d{2}:\d{2})/);
+        if (!dateMatch) {
+            console.log('Impossible de trouver la date de paiement');
+            return undefined;
+        }
+
+        // Extraction des détails de la commande
+        const priceSection = text.match(/CommandeCode de retourPrix(.*?)Codes de retour/s)?.[1];
+        if (!priceSection) {
+            console.log('Impossible de trouver la section des prix');
+            return undefined;
+        }
+
+        // Extraction des articles et leurs prix
+        const articles: { name: string; price: number }[] = [];
+        const articleMatches = priceSection.matchAll(/([^€\n]+?)(?:\s*)(\d+,\d+)\s*€/g);
+        let totalArticlesPrice = 0;
+        for (const match of articleMatches) {
+            const name = match[1].trim();
+            // On ignore les lignes qui contiennent "Frais de port" ou "Protection acheteurs"
+            if (!name.includes('Frais de port') && !name.includes('Protection acheteurs')) {
+                const price = parseFloat(match[2].replace(',', '.'));
+                totalArticlesPrice += price;
+                articles.push({
+                    name,
+                    price
+                });
+            }
+        }
+
+        // Extraction des frais
+        const shippingMatch = priceSection.match(/Frais de port\s*(\d+,\d+)\s*€/);
+        const protectionMatch = priceSection.match(/Protection acheteurs\s*\(Pro\)\s*(\d+,\d+)\s*€/);
+        const totalMatch = priceSection.match(/Total:\s*(\d+,\d+)\s*€/);
+
+        if (!shippingMatch || !protectionMatch || !totalMatch) {
+            console.log('Impossible de trouver tous les détails de prix');
+            console.log('Texte recherché:', priceSection);
+            return undefined;
+        }
+
+        const shipping = parseFloat(shippingMatch[1].replace(',', '.'));
+        const protection = parseFloat(protectionMatch[1].replace(',', '.'));
+        const total = parseFloat(totalMatch[1].replace(',', '.'));
+
+        return {
+            sellerAddress: {
+                name: addressMatch[1].trim(),
+                address: addressMatch[2].trim(),
+                postalCode: addressMatch[3].trim(),
+                city: addressMatch[4].trim(),
+                country: addressMatch[5].trim(),
+                email: addressMatch[6].trim()
+            },
+            paymentDate: dateMatch[1],
+            orderDetails: {
+                itemName: articles.length > 0 ? articles[0].name : '',
+                itemPrice: totalArticlesPrice,
+                shippingCost: shipping,
+                buyerProtection: protection,
+                total: total
+            }
+        };
+    } catch (error) {
+        console.error('Erreur lors de l\'extraction des informations du PDF:', error);
+        return undefined;
+    }
+}
+
 async function testEmailConnection() {
     let connection: ImapSimple | undefined;
     try {
@@ -184,6 +294,13 @@ async function testEmailConnection() {
                                     printInfo(`   └─ Pays: ${chalk.yellow(orderInfo.buyerCountry)}`);
                                     printInfo(`   └─ Article: ${chalk.yellow(orderInfo.itemName)}`);
                                 }
+
+                                // Extraction des informations du formulaire de retour
+                                const returnFormInfo = await extractReturnFormInfo(att);
+                                if (returnFormInfo) {
+                                    order.returnFormInfo = returnFormInfo;
+                                    orders.set(orderNumber, order);
+                                }
                             }
                         }
                     }
@@ -245,6 +362,31 @@ async function testEmailConnection() {
                     }
                     if (info.buyerFullAddress) {
                         console.log(chalk.white('📍 Adresse: ') + chalk.cyan(info.buyerFullAddress));
+                    }
+                    
+                    // Informations du formulaire de retour
+                    if (order.returnFormInfo) {
+                        printSubHeader('Informations du formulaire de retour');
+                        
+                        // Adresse du vendeur
+                        console.log(chalk.bold.white('\nAdresse du vendeur:'));
+                        console.log(chalk.white('👤 Nom: ') + chalk.cyan(order.returnFormInfo.sellerAddress.name));
+                        console.log(chalk.white('📍 Adresse: ') + chalk.cyan(order.returnFormInfo.sellerAddress.address));
+                        console.log(chalk.white('🏠 Ville: ') + chalk.cyan(`${order.returnFormInfo.sellerAddress.postalCode} ${order.returnFormInfo.sellerAddress.city}`));
+                        console.log(chalk.white('🌍 Pays: ') + chalk.cyan(order.returnFormInfo.sellerAddress.country));
+                        console.log(chalk.white('📧 Email: ') + chalk.cyan(order.returnFormInfo.sellerAddress.email));
+
+                        // Date de paiement
+                        console.log(chalk.bold.white('\nDate de paiement:'));
+                        console.log(chalk.white('📅 ') + chalk.cyan(order.returnFormInfo.paymentDate));
+
+                        // Détails de la commande
+                        console.log(chalk.bold.white('\nDétails de la commande:'));
+                        console.log(chalk.white('📦 Article: ') + chalk.cyan(order.returnFormInfo.orderDetails.itemName));
+                        console.log(chalk.white('💰 Prix: ') + chalk.cyan(`${order.returnFormInfo.orderDetails.itemPrice.toFixed(2)} €`));
+                        console.log(chalk.white('🚚 Frais de port: ') + chalk.cyan(`${order.returnFormInfo.orderDetails.shippingCost.toFixed(2)} €`));
+                        console.log(chalk.white('🛡️ Protection acheteur: ') + chalk.cyan(`${order.returnFormInfo.orderDetails.buyerProtection.toFixed(2)} €`));
+                        console.log(chalk.white('💶 Total: ') + chalk.cyan(`${order.returnFormInfo.orderDetails.total.toFixed(2)} €`));
                     }
                     
                     console.log(''); // Ligne vide pour la séparation
