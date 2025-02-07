@@ -11,13 +11,16 @@
   "dependencies": {
     "@types/imap": "^0.8.42",
     "@types/imap-simple": "^4.2.9",
+    "@types/mailparser": "^3.4.5",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
+    "chalk": "^4.1.2",
     "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "imap-simple": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
+    "mailparser": "^3.7.2",
     "mysql2": "^3.12.0",
     "sequelize": "^6.37.5",
     "sqlite3": "^5.1.7"
