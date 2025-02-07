@@ -3,63 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <style>
+        :root {
+            --gradient-start: #0f0f1a;
+            --gradient-end: #2d1a3d;
+            --accent-color: #483d8b;
+            --accent-hover: #614b9e;
+            --accent-pink: #8b3d71;
+            --text-color: #ffffff;
+            --section-bg: rgba(255, 255, 255, 0.05);
+        }
+
         body {
             width: 400px;
-            padding: 10px;
-            font-family: Arial, sans-serif;
+            padding: 20px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end), var(--accent-pink));
+            color: var(--text-color);
+            margin: 0;
         }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            background: linear-gradient(45deg, #6b5b95, #483d8b, #8b3d71);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .action-card {
+            background: var(--section-bg);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .action-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .action-description {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
         button {
             width: 100%;
-            padding: 10px;
-            margin: 5px 0;
-            background-color: #09B1BA;
+            padding: 12px;
+            background: var(--accent-color);
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
         }
+
         button:hover {
-            background-color: #0A9DA5;
+            background: linear-gradient(90deg, var(--accent-hover), var(--accent-pink));
+            transform: translateY(-1px);
         }
+
         #status {
             margin: 10px 0;
             padding: 10px;
-            border-radius: 4px;
+            border-radius: 6px;
+            font-size: 14px;
         }
-        .success {
-            background-color: #E8F5E9;
-            color: #2E7D32;
+
+        #status.success {
+            background: rgba(76, 175, 80, 0.2);
+            color: #81c784;
         }
-        .error {
-            background-color: #FFEBEE;
-            color: #C62828;
+
+        #status.error {
+            background: rgba(244, 67, 54, 0.2);
+            color: #e57373;
         }
+
         .loading {
             display: inline-block;
             animation: spin 1s linear infinite;
         }
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
         #content {
+            background: var(--section-bg);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
             max-height: 300px;
             overflow-y: auto;
-            margin-top: 10px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            white-space: pre-wrap;
             display: none;
+        }
+
+        #logs {
+            margin-top: 15px;
+            padding: 10px;
+            font-size: 11px;
+            font-family: monospace;
+            max-height: 150px;
+            overflow-y: auto;
+            background: var(--section-bg);
+            border-radius: 6px;
         }
     </style>
 </head>
 <body>
-    <button id="scanButton">Scanner les articles</button>
+    <div class="header">
+        <div class="logo">Vintalyze</div>
+        <div class="subtitle">Analyseur de profils Vinted</div>
+    </div>
+
+    <div class="action-card">
+        <div class="action-title">Scanner votre profil</div>
+        <div class="action-description">
+            1. Connectez-vous à votre compte Vinted<br>
+            2. Accédez à votre profil personnel<br>
+            3. Lancez le scan pour récupérer votre historique
+        </div>
+        <button id="scanButton">Scanner Profil</button>
+    </div>
+
+    <div class="action-card">
+        <div class="action-title">Analyser une boutique</div>
+        <div class="action-description">
+            1. Accédez à la boutique que vous souhaitez analyser<br>
+            2. Attendez que la page soit chargée<br>
+            3. Lancez l'analyse pour récupérer les informations
+        </div>
+        <button id="analyzeButton">Analyser Boutique</button>
+    </div>
+
     <div id="status"></div>
     <div id="content"></div>
-    <div id="logs" style="margin-top: 10px; border-top: 1px solid #ccc; padding: 10px; font-size: 12px; font-family: monospace; max-height: 200px; overflow-y: auto; background: #f5f5f5;"></div>
-    <div id="clickables" style="margin-top: 10px; border-top: 1px solid #ccc; padding-top: 10px; font-size: 12px;"></div>
+    <div id="logs"></div>
+
     <script src="popup.js"></script>
+    <script src="popup-analyze.js"></script>
 </body>
 </html>

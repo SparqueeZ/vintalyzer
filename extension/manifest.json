@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "Vinted Scanner",
-    "version": "1.0",
-    "description": "Scanner les articles Vinted",
+    "name": "Vintalyze",
+    "version": "1.0.0",
+    "description": "Analyseur intelligent de profils et boutiques Vinted",
     "permissions": [
         "activeTab",
         "scripting",
@@ -10,5 +10,8 @@
     ],
     "action": {
         "default_popup": "popup.html"
-    }
+    },
+    "host_permissions": [
+        "https://www.vinted.fr/*"
+    ]
 }
