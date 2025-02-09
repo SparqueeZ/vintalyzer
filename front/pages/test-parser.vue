@@ -25,6 +25,23 @@
           <p>Abonnés : {{ result.abonnes }}</p>
           <p v-if="result.localisation">Localisation : {{ result.localisation.ville ? result.localisation.ville + ', ' : '' }}{{ result.localisation.pays }}</p>
           
+          <div class="flex flex-wrap gap-4 mt-6">
+            <ShopStats />
+            <SalesStats />
+            <TotalStats />
+            <ExpenseStats />
+          </div>
+
+          <div class="flex flex-wrap gap-4 mt-6">
+            <BrandStats />
+            <CountrySales />
+          </div>
+
+          <div class="flex flex-wrap gap-4 mt-6">
+            <SalesChart />
+            <EngagementStats />
+          </div>
+
           <template v-if="result.statsVentes">
             <div class="mt-4">
               <h4 class="font-bold">📊 Statistiques des ventes</h4>
@@ -361,8 +378,17 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { patterns } from '~/utils/regexPatterns'
-import { concurrentAnalyzer } from '~/utils/concurrentAnalyzer'
+import { useDataStore } from '~/stores/dataStore'
+import BrandStats from '~/components/BrandStats.vue'
+import CountrySales from '~/components/CountrySales.vue'
+import EngagementStats from '~/components/EngagementStats.vue'
+import ExpenseStats from '~/components/ExpenseStats.vue'
+import SalesChart from '~/components/SalesChart.vue'
+import SalesStats from '~/components/SalesStats.vue'
+import ShopStats from '~/components/ShopStats.vue'
+import TotalStats from '~/components/TotalStats.vue'
 
+const store = useDataStore()
 const inputText = ref('')
 const concurrentText = ref('')
 const result = ref<any>(null)
@@ -432,7 +458,30 @@ async function analyzeText() {
   console.log('Texte à analyser:', inputText.value)
   
   try {
-    const locMatch = inputText.value.match(patterns.localisation)
+    // Extraire les infos de base
+    const baseInfoSection = inputText.value.match(/🏪 Informations de base\n([\s\S]*?)(?=\n\n|$)/)
+    if (baseInfoSection) {
+      const baseInfo = baseInfoSection[1]
+      const boutiqueMatch = baseInfo.match(/Nom de la boutique : (.+)/)
+      const abonnesMatch = baseInfo.match(/Abonnés : (\d+)/)
+      const locMatch = baseInfo.match(/Localisation : ([^,]+), (.+)/)
+      
+      // Créer l'objet result avec les infos de base
+      result.value = {
+        boutique: boutiqueMatch ? boutiqueMatch[1].trim() : null,
+        abonnes: abonnesMatch ? parseInt(abonnesMatch[1]) : null,
+        localisation: locMatch ? {
+          ville: locMatch[1].trim(),
+          pays: locMatch[2].trim()
+        } : null,
+        ventes: []
+      }
+
+      // Mettre à jour le store avec les données
+      store.setAnalyzedData(result.value)
+      console.log('Données de base extraites:', result.value)
+    }
+
     const venteMatches = extractAll(patterns.venteStats, inputText.value)
     const realSaleMatches = extractAll(patterns.realSales, inputText.value)
     
@@ -442,6 +491,24 @@ async function analyzeText() {
     const ventesByMarque = new Map()
     let totalVentes = 0
     let ventesNoMarque = []
+
+    // Extraire les informations de base
+    const locMatch = inputText.value.match(/Nom de la boutique : (.+)/)
+    const abonnesMatch = inputText.value.match(/Abonnés : (\d+)/)
+    
+    // Créer l'objet result
+    result.value = {
+      boutique: locMatch ? locMatch[1].trim() : null,
+      abonnes: abonnesMatch ? parseInt(abonnesMatch[1]) : null,
+      localisation: locMatch ? {
+        ville: locMatch[1].trim(),
+        pays: locMatch[2].trim()
+      } : null,
+      ventes: []
+    }
+
+    // Mettre à jour le store avec les données
+    store.setAnalyzedData(result.value)
 
     venteMatches.forEach(match => {
       const vente = {
@@ -469,14 +536,67 @@ async function analyzeText() {
       }
     })
 
+    // Initialiser les variables pour les dépenses
+    let totalVitrineDepense = 0
+    let totalBoostDepense = 0
+    let totalAchats = 0
+    const depenses = []
+
+    // Chercher les dépenses de vitrine
+    const vitrineMatch = extractAll(patterns.vitrine, inputText.value)
+    if (vitrineMatch) {
+      vitrineMatch.forEach(match => {
+        const montant = Math.abs(parseFloat(match[1].replace(',', '.')))
+        const date = match[2]
+        totalVitrineDepense += montant
+        depenses.push({
+          type: 'vitrine',
+          montant,
+          date
+        })
+      })
+    }
+
+    // Chercher les dépenses de boost
+    const boostMatch = extractAll(patterns.boost, inputText.value)
+    if (boostMatch) {
+      boostMatch.forEach(match => {
+        const montant = Math.abs(parseFloat(match[1].replace(',', '.')))
+        const date = match[2]
+        totalBoostDepense += montant
+        depenses.push({
+          type: 'boost',
+          montant,
+          date
+        })
+      })
+    }
+
+    // Chercher les achats
+    const achatsMatch = extractAll(patterns.achats, inputText.value)
+    if (achatsMatch) {
+      achatsMatch.forEach(match => {
+        const article = match[1]
+        const montant = Math.abs(parseFloat(match[2].replace(',', '.')))
+        const date = match[3]
+        totalAchats += montant
+        depenses.push({
+          type: 'achat',
+          article,
+          montant,
+          date
+        })
+      })
+    }
+
+    // Trier les dépenses par date
+    depenses.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+
     const salesByMonth = new Map()
     const pubByMonth = new Map()
     const achatsParMois = new Map()
     let totalRealSales = 0
     let totalCA = 0
-    let totalVitrineDepense = 0
-    let totalBoostDepense = 0
-    let totalAchats = 0
     const listeAchats = []
 
     // Chercher les ventes
@@ -484,6 +604,7 @@ async function analyzeText() {
     if (ventesMatch) {
       // Utiliser un Set pour suivre les ventes uniques
       const uniqueSales = new Set()
+      const ventes = []
       
       ventesMatch.forEach(match => {
         const vente = {
@@ -509,6 +630,10 @@ async function analyzeText() {
         // Ne traiter la vente que si elle n'a pas déjà été vue
         if (!uniqueSales.has(saleKey)) {
           uniqueSales.add(saleKey)
+          ventes.push({
+            ...vente,
+            marque: match[1].split(',')[0].trim() // Extraire la marque du nom de l'article
+          })
           
           const [, mois, annee] = vente.date.match(/(\w+) (\d{4})/)
           const monthKey = `${mois} ${annee}`
@@ -534,75 +659,49 @@ async function analyzeText() {
           totalCA += vente.prix
         }
       })
-    }
 
-    // Chercher les dépenses de vitrine
-    const vitrineMatch = extractAll(patterns.vitrine, inputText.value)
-    if (vitrineMatch) {
-      vitrineMatch.forEach(match => {
-        const prix = parseFloat(match[1].replace(',', '.'))
-        const date = match[2]
-        const [, mois, annee] = date.match(/(\w+) (\d{4})/)
-        const monthKey = `${mois} ${annee}`
-        
-        if (!pubByMonth.has(monthKey)) {
-          pubByMonth.set(monthKey, {
-            vitrine: 0,
-            boost: 0
-          })
+      // Mettre à jour le store avec les données analysées
+      const totalViews = Array.from(ventesByMarque.values()).reduce((sum, stats) => 
+        sum + stats.ventes.reduce((acc, v) => acc + v.vues, 0), 0)
+      
+      const totalSales = Array.from(uniqueSales).length
+      const conversionRate = totalViews > 0 ? (totalSales / totalViews) * 100 : 0
+
+      store.setAnalyzedData({
+        ventes: Array.from(uniqueSales).map(key => {
+          const [article, prix, date] = key.split('|')
+          return {
+            article,
+            prix: parseFloat(prix),
+            date,
+            marque: article.split(',')[0].trim()
+          }
+        }),
+        ventes_stat: Array.from(ventesByMarque.entries()).map(([marque, stats]) => ({
+          marque,
+          prix: stats.totalPrix,
+          vues: stats.ventes.reduce((acc, v) => acc + v.vues, 0),
+          count: stats.count,
+          sales: stats.count,
+          revenue: stats.totalPrix
+        })),
+        stats: {
+          totalViews,
+          totalSales,
+          conversionRate
+        },
+        depenses: depenses,
+        expenses: {
+          vitrine: totalVitrineDepense,
+          boost: totalBoostDepense,
+          achats: totalAchats,
+          total: totalVitrineDepense + totalBoostDepense + totalAchats
+        },
+        pub: {
+          totalVitrine: totalVitrineDepense,
+          totalBoost: totalBoostDepense,
+          total: totalVitrineDepense + totalBoostDepense
         }
-        
-        const monthStats = pubByMonth.get(monthKey)
-        monthStats.vitrine += prix
-        totalVitrineDepense += prix
-      })
-    }
-
-    // Chercher les dépenses de boost
-    const boostMatch = extractAll(patterns.boost, inputText.value)
-    if (boostMatch) {
-      boostMatch.forEach(match => {
-        const prix = parseFloat(match[1].replace(',', '.'))
-        const date = match[2]
-        const [, mois, annee] = date.match(/(\w+) (\d{4})/)
-        const monthKey = `${mois} ${annee}`
-        
-        if (!pubByMonth.has(monthKey)) {
-          pubByMonth.set(monthKey, {
-            vitrine: 0,
-            boost: 0
-          })
-        }
-        
-        const monthStats = pubByMonth.get(monthKey)
-        monthStats.boost += prix
-        totalBoostDepense += prix
-      })
-    }
-
-    // Chercher les achats
-    const achatsMatch = extractAll(patterns.achats, inputText.value)
-    if (achatsMatch) {
-      achatsMatch.forEach(match => {
-        const article = match[1]
-        const prix = parseFloat(match[2].replace(',', '.'))
-        const date = match[3]
-        const [, mois, annee] = date.match(/(\w+) (\d{4})/)
-        const monthKey = `${mois} ${annee}`
-        
-        // Ajouter à la liste des achats
-        listeAchats.push({
-          article,
-          prix,
-          date
-        })
-
-        if (!achatsParMois.has(monthKey)) {
-          achatsParMois.set(monthKey, 0)
-        }
-        
-        achatsParMois.set(monthKey, achatsParMois.get(monthKey) + prix)
-        totalAchats += prix
       })
     }
 

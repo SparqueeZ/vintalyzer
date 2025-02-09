@@ -53,18 +53,15 @@ const hasVentesStat = computed(() => {
 })
 
 const totalViews = computed(() => {
-  if (!store.analyzedData?.ventes_stat) return 0
-  return store.analyzedData.ventes_stat.reduce((sum, v) => sum + parseInt(v.vues), 0)
+  return store.getTotalViews
 })
 
 const totalSales = computed(() => {
-  if (!store.analyzedData?.ventes_stat) return 0
-  return store.analyzedData.ventes_stat.length
+  return store.getTotalSales
 })
 
 const conversionRate = computed(() => {
-  if (totalViews.value === 0) return 0
-  return ((totalSales.value / totalViews.value) * 100).toFixed(2)
+  return store.getConversionRate.toFixed(2)
 })
 
 const performanceMessage = computed(() => {

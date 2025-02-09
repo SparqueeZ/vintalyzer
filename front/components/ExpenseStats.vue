@@ -46,9 +46,8 @@ const store = useDataStore()
 // Debug
 watch(() => store.analyzedData, (newData) => {
   console.log('ExpenseStats - analyzedData:', newData)
-  if (newData?.depenses) {
-    console.log('Nombre de dépenses:', newData.depenses.length)
-    console.log('Première dépense:', newData.depenses[0])
+  if (newData?.expenses) {
+    console.log('Dépenses totales:', newData.expenses)
   }
 }, { immediate: true })
 
@@ -69,23 +68,27 @@ function formatMoney(amount: number) {
 }
 
 const hasDepenses = computed(() => {
-  return store.analyzedData?.depenses?.length > 0
+  return store.analyzedData?.pub && (
+    store.analyzedData.pub.totalVitrine > 0 ||
+    store.analyzedData.pub.totalBoost > 0
+  )
 })
 
 const dateRange = computed(() => {
-  const depenses = store.analyzedData?.depenses || []
-  if (!depenses.length) return ''
+  const ventes = store.getVentes
+  if (!ventes.length) return ''
   
-  const firstDate = new Date(depenses[0].date)
-  const lastDate = new Date(depenses[depenses.length - 1].date)
+  const firstDate = new Date(ventes[0].date)
+  const lastDate = new Date(ventes[ventes.length - 1].date)
   
   return `${formatDate(firstDate)} - ${formatDate(lastDate)}`
 })
 
 const totalExpenses = computed(() => {
-  const depenses = store.analyzedData?.depenses || []
-  const total = depenses.reduce((sum, depense) => sum + (parseFloat(depense.montant) || 0), 0)
-  return formatMoney(total)
+  const pub = store.analyzedData?.pub
+  if (!pub) return formatMoney(0)
+  
+  return formatMoney(pub.total)
 })
 
 const boostCount = computed(() => {

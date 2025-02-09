@@ -29,6 +29,11 @@ export const useDataStore = defineStore('dataStore', {
           count
         }))
         .sort((a, b) => a.date.getTime() - b.date.getTime())
-    }
+    },
+    
+    // Utilise les stats pré-calculées
+    getTotalViews: (state) => state.analyzedData?.stats?.totalViews || 0,
+    getTotalSales: (state) => state.analyzedData?.stats?.totalSales || 0,
+    getConversionRate: (state) => state.analyzedData?.stats?.conversionRate || 0,
   }
 })

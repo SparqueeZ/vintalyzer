@@ -15,7 +15,8 @@
       <div class="flex-1">
         <span>Marque</span>
       </div>
-      <div class="flex gap-8">
+      <div class="flex gap-4">
+        <span class="w-16 text-right">Ventes</span>
         <span class="w-20 text-right">Vues</span>
         <span class="w-20 text-right">CA</span>
         <span class="w-16 text-right">Conv.</span>
@@ -41,7 +42,14 @@
             </div>
             
             <!-- Stats -->
-            <div class="flex gap-8 items-center text-sm">
+            <div class="flex gap-4 items-center text-sm">
+              <!-- Ventes -->
+              <div class="w-16 text-right">
+                <span class="text-violet-400 font-medium">
+                  {{ formatNumber(brand.sales) }}
+                </span>
+              </div>
+              
               <!-- Vues -->
               <div class="w-20 text-right">
                 <span class="text-violet-400 font-medium">
@@ -97,18 +105,11 @@ const topBrands = computed(() => {
     if (!brandStats.has(brandName)) {
       brandStats.set(brandName, {
         name: formatBrandName(vente.marque),
-        sales: 0,
-        revenue: 0,
-        vues: 0,
-        favoris: 0
+        sales: vente.sales || 0,
+        revenue: vente.revenue || 0,
+        vues: vente.vues || 0
       })
     }
-    
-    const stats = brandStats.get(brandName)
-    stats.sales += 1
-    stats.revenue += parseFloat(vente.prix) || 0
-    stats.vues += parseInt(vente.vues) || 0
-    stats.favoris += parseInt(vente.favoris) || 0
   })
   
   return Array.from(brandStats.values())
