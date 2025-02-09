@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const status = document.getElementById('status');
     const content = document.getElementById('content');
     const logs = document.getElementById('logs');
-    const clickables = document.getElementById('clickables'); // Ajouter l'élément pour afficher les éléments cliquables
     let fullText = '';
 
     // Fonction pour ajouter un log
@@ -24,7 +23,6 @@ document.addEventListener('DOMContentLoaded', function() {
             status.className = '';
             content.style.display = 'none';
             logs.innerHTML = ''; // Réinitialiser les logs
-            clickables.innerHTML = ''; // Réinitialiser l'affichage des éléments cliquables
 
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
@@ -34,6 +32,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 func: async () => {
                     function sleep(ms) {
                         return new Promise(resolve => setTimeout(resolve, ms));
+                    }
+
+                    // Nouvelle étape : Cliquer sur le bouton "Vendus"
+                    const vendusButton = Array.from(document.querySelectorAll('button')).find(button => 
+                        button.textContent.trim().toLowerCase() === 'vendus');
+                    if (vendusButton) {
+                        vendusButton.click();
+                        await sleep(2000); // Attendre le chargement des articles vendus
                     }
 
                     // Récupérer le texte brut du profil
@@ -98,11 +104,15 @@ document.addEventListener('DOMContentLoaded', function() {
                             if (processedUrls.has(url)) continue;
                             processedUrls.add(url);
 
+                            // Récupérer le texte brut de l'article pour les vues
+                            const rawText = article.innerText;
+                            const viewsMatch = rawText.match(/(\d+)\s*vues?/);
+                            const views = viewsMatch ? viewsMatch[0] : '';
+
+                            // Extraire les autres informations
                             const info = {
                                 title: '',
                                 isSold: false,
-                                views: '',
-                                favorites: '',
                                 price: ''
                             };
 
@@ -118,23 +128,15 @@ document.addEventListener('DOMContentLoaded', function() {
                             info.isSold = article.textContent.toLowerCase().includes('vendu') || 
                                         article.querySelector('.status-label--sold, [data-testid*="sold"]') !== null;
 
-                            const stats = article.querySelectorAll('[class*="stats"] span, [class*="Cell"] span');
-                            stats.forEach(stat => {
-                                const text = stat.textContent.trim().toLowerCase();
-                                if (text.includes('vue')) info.views = text;
-                                if (text.includes('favori')) info.favorites = text;
-                            });
-
                             const priceElement = article.querySelector('[class*="price"]:not([class*="protection"]), [data-testid*="price"]');
                             if (priceElement) {
                                 info.price = priceElement.textContent.trim();
                             }
 
-                            let formattedText = info.title + '\n';
+                            // Construire le texte final en incluant les vues
+                            let formattedText = `${info.title}, ${info.price}\n`;
                             if (info.isSold) formattedText += 'Vendu\n';
-                            if (info.views) formattedText += info.views + '\n';
-                            if (info.favorites) formattedText += info.favorites + '\n';
-                            if (info.price) formattedText += info.price;
+                            if (views) formattedText += views + '\n';
 
                             articlesData.push(formattedText.trim());
                         } catch (e) {
@@ -142,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
 
-                    return profileText + '\n\n=== ARTICLES ===\n\n' + articlesData.join('\n\n=== ARTICLE SUIVANT ===\n\n');
+                    return profileText + '\n\n=== ARTICLES ===\n\n' + articlesData.join('\n\n');
                 }
             });
 
@@ -319,7 +321,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const historyResult = await chrome.scripting.executeScript({
                         target: { tabId: tab.id },
                         func: () => {
-                            // Chercher le lien historique de plusieurs façons
+                            // Cliquer sur l'onglet historique de plusieurs façons
                             const historyLink = 
                                 // 1. Chercher un lien direct
                                 document.querySelector('a[href*="historique"]') ||
