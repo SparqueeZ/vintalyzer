@@ -86,47 +86,37 @@ class ConcurrentAnalyzer {
     }
 
     async analyze(text: string): Promise<AnalyzeResults> {
-        console.log('🔍 Début de l\'analyse...');
-        
         try {
             // Extraire les informations de la boutique
             const boutique = this._extractBoutiqueInfo(text);
-            console.log('📊 Données boutique extraites:', boutique);
 
             // Extraire les articles et commentaires
             const articles = this._extractArticles(text);
-            console.log('📦 Articles extraits:', articles);
-            
             const commentaires = this._extractCommentaires(text);
-            console.log('💬 Commentaires extraits:', commentaires);
 
             // Analyser les ventes
             const analyseVentes = this._analyseVentes(commentaires, boutique.evaluations, articles);
-            console.log('💰 Analyse des ventes:', analyseVentes);
 
             // Calculer le nombre de pays avec des ventes significatives
             const paysAvecVentes = Object.entries(analyseVentes.ventesParPays || {})
                 .filter(([_, ventes]) => ventes > 0)
                 .length;
-            console.log('🌍 Nombre de pays avec des ventes:', paysAvecVentes);
 
             // Compter les marques uniques
             const marques = new Set(articles.map(a => a.marque).filter(m => m && m !== 'Marque non spécifiée'));
-            console.log('🏷️ Marques uniques:', marques);
 
             // Préparer les données de scoring
             const scoringData: ScoringData = {
                 subscribers: parseInt(boutique.abonnes.toString()) || 0,
                 rating: parseFloat(boutique.note.toString()) || 0,
                 totalSales: analyseVentes.totalVentes || 0,
-                monthlySales: Math.round((analyseVentes.totalVentes || 0) / 12),  // Moyenne mensuelle
+                monthlySales: Math.round((analyseVentes.totalVentes || 0) / 12),
                 internationalSales: paysAvecVentes,
                 brandsCount: marques.size
             };
-            console.log('🎯 Données de scoring:', scoringData);
 
             // Retourner toutes les données
-            const results: AnalyzeResults = {
+            return {
                 boutique,
                 articles,
                 commentaires,
@@ -139,11 +129,8 @@ class ConcurrentAnalyzer {
                 ),
                 scoringData
             };
-            console.log('✅ Résultats complets:', results);
-            return results;
 
         } catch (error) {
-            console.error('❌ Erreur pendant l\'analyse:', error);
             throw error;
         }
     }
@@ -170,7 +157,6 @@ class ConcurrentAnalyzer {
             ville: info.ville
         };
 
-        console.log('ℹ️ Infos extraites:', info);
         return info;
     }
 
@@ -297,24 +283,10 @@ class ConcurrentAnalyzer {
     private _analyseVentes(commentaires: Commentaire[], evaluations: number, articles: Article[]): AnalyseVentes {
         // Analyser les ventes
         const analyseVentes = this.rules.analyse.analyseVentes(commentaires, evaluations);
-        console.log('📊 Analyse des ventes:');
-        console.log('------------------------');
-        console.log(`Total des ventes: ${analyseVentes.totalVentes}`);
-        console.log('Répartition par pays:');
-        for (const [pays, nombre] of Object.entries(analyseVentes.ventesParPays)) {
-            if (nombre > 0) {
-                console.log(`- ${pays}: ${nombre} ventes (${analyseVentes.pourcentagesParPays[pays].toFixed(1)}%)`);
-            }
-        }
-        
+
         // Calculer le prix moyen et le chiffre d'affaires
         const prixMoyen = this.rules.analyse.prixMoyen(articles);
         const chiffreAffaires = analyseVentes.totalVentes * prixMoyen;
-        console.log('------------------------');
-        console.log('💰 Analyse financière:');
-        console.log(`Prix moyen des articles: ${prixMoyen.toFixed(2)}€`);
-        console.log(`Chiffre d'affaires estimé: ${chiffreAffaires.toFixed(2)}€`);
-        console.log(`CA mensuel moyen estimé: ${(chiffreAffaires / 12).toFixed(2)}€`);
 
         // Formater les dates des commentaires
         const commentairesAvecDates = commentaires.map(comment => ({

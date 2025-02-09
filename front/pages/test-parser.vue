@@ -261,6 +261,30 @@
 
       <div v-if="concurrentResult" class="mt-4">
         <h3 class="text-lg mb-2">Résultats de l'analyse du concurrent :</h3>
+        <div class="grid grid-cols-3 gap-4 mb-4">
+          <CompetitorDailyStats 
+            :statsTemporelles="concurrentResult.statsTemporelles"
+            :analyseVentes="concurrentResult.analyseVentes"
+          />
+          <CompetitorMonthlyStats 
+            :statsTemporelles="concurrentResult.statsTemporelles"
+            :analyseVentes="concurrentResult.analyseVentes"
+          />
+          <CompetitorSalesStats 
+            :analyseVentes="concurrentResult.analyseVentes"
+            :prixMoyen="concurrentResult.prixMoyen"
+            :commentaires="concurrentResult.commentaires"
+          />
+        </div>
+        
+        <div class="mb-4">
+          <CompetitorScore :scoringData="concurrentResult.scoringData" />
+        </div>
+        
+        <div class="mb-4">
+          <CompetitorProfile :boutique="concurrentResult.boutique" />
+        </div>
+        
         <div class="bg-gray-100 p-4 rounded overflow-auto">
           <div class="mb-4">
             <h4 class="font-bold">🏪 Informations Boutique</h4>
@@ -377,8 +401,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { patterns } from '~/utils/regexPatterns'
 import { useDataStore } from '~/stores/dataStore'
+import { useConcurrentStore } from '~/stores/concurrentStore'
+import { concurrentAnalyzer } from '~/utils/concurrentAnalyzer'
 import BrandStats from '~/components/BrandStats.vue'
 import CountrySales from '~/components/CountrySales.vue'
 import EngagementStats from '~/components/EngagementStats.vue'
@@ -387,8 +412,14 @@ import SalesChart from '~/components/SalesChart.vue'
 import SalesStats from '~/components/SalesStats.vue'
 import ShopStats from '~/components/ShopStats.vue'
 import TotalStats from '~/components/TotalStats.vue'
+import CompetitorDailyStats from '~/components/concurrent/CompetitorDailyStats.vue'
+import CompetitorProfile from '~/components/concurrent/CompetitorProfile.vue'
+import CompetitorSalesStats from '~/components/concurrent/CompetitorSalesStats.vue'
+import CompetitorMonthlyStats from '~/components/concurrent/CompetitorMonthlyStats.vue'
+import CompetitorScore from '~/components/concurrent/CompetitorScore.vue'
 
 const store = useDataStore()
+const concurrentStore = useConcurrentStore()
 const inputText = ref('')
 const concurrentText = ref('')
 const result = ref<any>(null)
@@ -770,6 +801,11 @@ const toggleMonthDetails = (month) => {
 
 async function analyzeConcurrent() {
   logs.value = []
-  concurrentResult.value = await concurrentAnalyzer.analyze(concurrentText.value)
+  try {
+    concurrentResult.value = await concurrentAnalyzer.analyze(concurrentText.value)
+    concurrentStore.updateConcurrentData(concurrentResult.value)
+  } catch (error) {
+    console.error('Erreur lors de l\'analyse du concurrent:', error)
+  }
 }
 </script>

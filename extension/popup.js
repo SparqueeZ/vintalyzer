@@ -45,16 +45,32 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Récupérer le texte brut du profil
                     const mainContent = document.querySelector('main');
                     let profileText = '';
+                    let profileJson = {
+                        email: '',
+                        evaluations: ''
+                    };
+
                     if (mainContent) {
-                        // Créer une copie pour ne pas affecter la page
-                        const tempMain = mainContent.cloneNode(true);
+                        // Extraire l'email
+                        const emailElement = mainContent.querySelector('a[href^="mailto:"]');
+                        if (emailElement) {
+                            profileJson.email = emailElement.textContent.trim();
+                        }
+
+                        // Extraire le nombre d'évaluations
+                        const evaluationsElement = mainContent.querySelector('[class*="rating"], [class*="evaluations"]');
+                        if (evaluationsElement) {
+                            profileJson.evaluations = evaluationsElement.textContent.trim();
+                        }
+
+                        // Ajouter le JSON au début du texte complet
+                        profileText = '=== PROFIL JSON ===\n' + JSON.stringify(profileJson, null, 2) + '\n\n=== TEXTE BRUT ===\n';
                         
-                        // Retirer les éléments qu'on ne veut pas
+                        // Ajouter le texte brut original
+                        const tempMain = mainContent.cloneNode(true);
                         const elementsToRemove = tempMain.querySelectorAll('.feed-grid, [class*="feed-grid"], [class*="catalog"], [class*="button"], script, style');
                         elementsToRemove.forEach(el => el.remove());
-                        
-                        // Récupérer le texte et le nettoyer
-                        profileText = tempMain.innerText
+                        profileText += tempMain.innerText
                             .split('\n')
                             .map(line => line.trim())
                             .filter(line => line && !line.includes('Modifier mon profil'))
