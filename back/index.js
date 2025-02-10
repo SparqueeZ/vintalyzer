@@ -6,6 +6,8 @@ const Role = require("./models/roleModel");
 const UserRole = require("./models/userRoleModel");
 const User = require("./models/userModel");
 
+const emailDetectionController = require("./controllers/emailDetectionController.js");
+
 dotenv.config();
 
 const app = express();
@@ -14,13 +16,39 @@ const PORT = 3001;
 app.use(cookieParser());
 app.use(express.json());
 
+const initializeDatabase = async () => {
+  try {
+    await sequelize.sync();
+    console.log("[SUCCESS] Base de données synchronisée");
+
+    // Vérifier si des rôles existent déjà
+    const existingRoles = await Role.findAll();
+
+    if (existingRoles.length === 0) {
+      const roles = ["administrator", "moderator", "user"];
+      for (const roleName of roles) {
+        await Role.create({ name: roleName });
+        console.log(`[SUCCESS] Rôle '${roleName}' créé`);
+      }
+      console.log("[SUCCESS] Initialisation des rôles terminée");
+    } else {
+      console.log("[INFO] Les rôles sont déjà initialisés");
+    }
+  } catch (error) {
+    console.error(
+      "[ERROR] Erreur lors de l'initialisation de la base de données:",
+      error
+    );
+  }
+};
+
 sequelize
   .authenticate()
   .then(() => {
     console.log(
       "[SUCCESS] Connection to the database has been established successfully."
     );
-    return sequelize.sync();
+    return initializeDatabase(); // Appeler la fonction d'initialisation
   })
   .then(() => {
     console.log(
@@ -33,24 +61,24 @@ sequelize
     )
   );
 
-// const initializeDatabase = async () => {
-//   await sequelize.sync();
-//   console.log("Base de données synchronisée.");
-
-//   const roles = ["moderator", "administrator", "user"];
-//   for (const roleName of roles) {
-//     await Role.findOrCreate({ where: { name: roleName } });
-//   }
-//   console.log("Rôles par défaut ajoutés.");
-// };
-
-// initializeDatabase();
-
 const testRoutes = require("./routes/testRoutes");
 const authRoutes = require("./routes/authRoutes");
+const documentRoutes = require("./routes/documentRoutes");
 
 app.use("/api", testRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/documents", documentRoutes);
+
+app.get("/api/detect-emails", async (req, res) => {
+  try {
+    await emailDetectionController.testEmailConnection();
+    res.status(200).send("Email detection process completed successfully.");
+  } catch (error) {
+    res
+      .status(500)
+      .send("Error during email detection process: " + error.message);
+  }
+});
 
 app.get("/", (req, res) => {
   res.send("Hello World!");

@@ -6,4 +6,9 @@
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+import { useUserStore } from "@/stores/UserStore";
+
+const userStore = useUserStore();
+await userStore.fetchUser();
+</script>

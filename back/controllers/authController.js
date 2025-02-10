@@ -8,6 +8,7 @@ const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const ResetToken = require("../models/resetTokenModel");
 const UserResetToken = require("../models/userResetTokenModel");
+const { sendEmailConfirmation } = require("../utils/emailUtils");
 require("dotenv").config();
 
 exports.register = async (req, res) => {
@@ -54,7 +55,6 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(email, password);
     const user = await User.findOne({ where: { email } });
 
     if (!user) {
@@ -75,7 +75,7 @@ exports.login = async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      sameSite: "Strict",
+      //   sameSite: "Strict",
     });
 
     res.status(200).json({ message: "Utilisateur connecté." });
@@ -91,10 +91,9 @@ exports.login = async (req, res) => {
 };
 
 exports.getUserInformations = async (req, res) => {
-  console.log(req.user.id);
   try {
     const user = await User.findByPk(req.user.id, {
-      attributes: { exclude: ["id"] },
+      attributes: { exclude: ["password"] },
       include: [
         {
           model: Role,
@@ -104,6 +103,9 @@ exports.getUserInformations = async (req, res) => {
       ],
     });
     res.status(200).json(user);
+    console.log(
+      "[SUCCESS] Informations de l'utilisateur récupérées avec succès."
+    );
   } catch (error) {
     console.error(
       "[ERROR] Erreur lors de la récupération des informations de l'utilisateur.",
@@ -191,6 +193,15 @@ exports.requestPasswordReset = async (req, res) => {
       return res.status(404).json({ error: "Utilisateur non trouvé." });
     }
 
+    // Delete existing reset tokens for the user
+    const userResetTokens = await UserResetToken.findAll({
+      where: { userId: user.id },
+    });
+    for (const userResetToken of userResetTokens) {
+      await userResetToken.destroy();
+      await ResetToken.destroy({ where: { id: userResetToken.resetTokenId } });
+    }
+
     const resetToken = crypto.randomBytes(32).toString("hex");
     const resetTokenExpiry = Date.now() + 3600000; // 1 hour
 
@@ -204,7 +215,7 @@ exports.requestPasswordReset = async (req, res) => {
       resetTokenId: token.id,
     });
 
-    const resetLink = `http://localhost:3000/reset-password/${resetToken}`;
+    const resetLink = `${process.env.FRONT_URL}/reset-password/${resetToken}`;
 
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
@@ -225,6 +236,7 @@ exports.requestPasswordReset = async (req, res) => {
 
     await transporter.sendMail(mailOptions);
 
+    console.log("[INFO] Email de réinitialisation envoyé.");
     res.status(200).json({ message: "Email de réinitialisation envoyé." });
   } catch (error) {
     console.error(
@@ -277,6 +289,48 @@ exports.resetPassword = async (req, res) => {
 };
 
 // TODO
-exports.requestEmailConfirmation = async (req, res) => {};
+exports.requestEmailConfirmation = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ where: { email } });
 
-exports.confirmEmail = async (req, res) => {};
+    if (!user) {
+      console.error("[ERROR] Utilisateur non trouvé.");
+      return res.status(404).json({ error: "Utilisateur non trouvé." });
+    }
+
+    sendEmailConfirmation(user);
+
+    console.log("[INFO] Email de confirmation envoyé.");
+    res.status(200).json({ message: "Email de confirmation envoyé." });
+  } catch (error) {
+    console.error(
+      "[ERROR] Erreur lors de la demande de confirmation de l'email.",
+      error
+    );
+    res.status(500).json({
+      error: "Erreur lors de la demande de confirmation de l'email.",
+    });
+  }
+};
+
+exports.confirmEmail = async (req, res) => {
+  try {
+    const { token } = req.body;
+    const user = await User.findOne({ where: { emailConfirmed: 0 } });
+    const decoded = jwt.verify(token, process.env.EMAIL_SECRET);
+    if (user.id === decoded.id) {
+      user.emailConfirmed = 1;
+      await user.save();
+      res.status(200).json({ message: "Email confirmé." });
+    } else {
+      console.error("[ERROR] Utilisateur non trouvé.");
+      return res.status(404).json({ error: "Utilisateur non trouvé." });
+    }
+  } catch (error) {
+    console.error("[ERROR] Erreur lors de la confirmation de l'email.", error);
+    res.status(500).json({
+      error: "Erreur lors de la confirmation de l'email.",
+    });
+  }
+};

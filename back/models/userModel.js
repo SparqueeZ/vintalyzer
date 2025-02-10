@@ -1,6 +1,7 @@
 const { Model, DataTypes } = require("sequelize");
 const { sequelize } = require("../configs/db");
 const bcrypt = require("bcrypt");
+const { sendEmailConfirmation } = require("../utils/emailUtils");
 
 const User = sequelize.define("User", {
   id: {
@@ -32,8 +33,12 @@ const User = sequelize.define("User", {
     type: DataTypes.STRING(100),
     allowNull: false,
     validate: {
-      len: [8, 100],
+      len: [3, 100],
     },
+  },
+  emailConfirmed: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
   },
   createdAt: {
     type: DataTypes.DATE,
@@ -61,6 +66,7 @@ User.afterCreate(async (user, options) => {
   if (role) {
     await UserRole.create({ userId: user.id, roleId: role.id });
   }
+  // sendEmailConfirmation(user);
 });
 
 module.exports = User;
