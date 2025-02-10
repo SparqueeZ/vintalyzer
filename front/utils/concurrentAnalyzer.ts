@@ -49,6 +49,7 @@ interface AnalyseVentes {
     commentaires?: Commentaire[];
     prixMoyen?: number;
     chiffreAffaires?: number;
+    top5Marques?: MarqueStats[];
 }
 
 interface ScoringData {
@@ -58,6 +59,12 @@ interface ScoringData {
     monthlySales: number;
     internationalSales: number;
     brandsCount: number;
+}
+
+interface MarqueStats {
+    marque: string;
+    nombre: number;
+    pourcentage: number;
 }
 
 interface AnalyzeResults {
@@ -74,6 +81,7 @@ interface AnalyzeResults {
         caParJour: number;
     };
     scoringData: ScoringData;
+    top5Marques: MarqueStats[];
 }
 
 class ConcurrentAnalyzer {
@@ -127,7 +135,8 @@ class ConcurrentAnalyzer {
                     analyseVentes.totalVentes,
                     analyseVentes.totalVentes * this.rules.analyse.prixMoyen(articles)
                 ),
-                scoringData
+                scoringData,
+                top5Marques: this._calculerTop5Marques(articles)
             };
 
         } catch (error) {
@@ -165,7 +174,7 @@ class ConcurrentAnalyzer {
         let match: RegExpExecArray | null;
 
         // Créer une copie du pattern pour éviter les problèmes avec lastIndex
-        const pattern = new RegExp(this.patterns.article.pattern);
+        const pattern = new RegExp(this.patterns.article.pattern, 'g');
         
         while ((match = pattern.exec(text)) !== null) {
             const article: Article = {
@@ -184,7 +193,7 @@ class ConcurrentAnalyzer {
         let match: RegExpExecArray | null;
 
         // Créer une copie du pattern pour éviter les problèmes avec lastIndex
-        const pattern = new RegExp(this.patterns.commentaire.pattern);
+        const pattern = new RegExp(this.patterns.commentaire.pattern, 'g');
         
         while ((match = pattern.exec(text)) !== null) {
             const commentaire: Commentaire = {
@@ -303,8 +312,30 @@ class ConcurrentAnalyzer {
             ...analyseVentes,
             commentaires: commentairesTriees,
             prixMoyen,
-            chiffreAffaires
+            chiffreAffaires,
+            top5Marques: this._calculerTop5Marques(articles)
         };
+    }
+
+    private _calculerTop5Marques(articles: Article[]): MarqueStats[] {
+        // Compter les occurrences de chaque marque
+        const compteur = new Map<string, number>();
+        articles.forEach(article => {
+            const count = compteur.get(article.marque) || 0;
+            compteur.set(article.marque, count + 1);
+        });
+
+        // Convertir en tableau et trier par nombre d'occurrences
+        const stats: MarqueStats[] = Array.from(compteur.entries()).map(([marque, nombre]) => ({
+            marque,
+            nombre,
+            pourcentage: (nombre / articles.length) * 100
+        }));
+
+        // Trier par nombre décroissant et prendre les 5 premiers
+        return stats
+            .sort((a, b) => b.nombre - a.nombre)
+            .slice(0, 5);
     }
 }
 

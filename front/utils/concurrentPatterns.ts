@@ -12,21 +12,20 @@ export const concurrentPatterns = {
 
     // Pattern pour les ventes
     vente: {
-        pattern: /(\d{1,2} \w+ 2024)\n(?:Vente|Paiements de Vinted)\n([^€\n]+)\n(\d+[,.]\d{2}) ?€(?:\n([A-Za-z]+))?/g,
+        pattern: /(\d{2}\/\d{2}\/\d{4})\n([^:]+): ([\d,]+) €/g,
         structure: {
-            date: 1,
-            article: 2,
-            prix: 3,
-            pays: 4
+            date: 1,      // Premier groupe
+            pays: 2,      // Deuxième groupe
+            montant: 3    // Troisième groupe
         }
     },
 
     // Pattern pour un article complet
     article: {
-        pattern: /prix : (\d+,\d+) €, marque : (.*?), taille/g,
+        pattern: /marque : (.*?), prix : (\d+,\d{2})/g,
         structure: {
-            prix: 1,          // Premier groupe
-            marque: 2,        // Deuxième groupe
+            marque: 1,  // Premier groupe : la marque (ex: H&M)
+            prix: 2     // Deuxième groupe : le prix (ex: 6,00)
         }
     },
 
@@ -34,14 +33,11 @@ export const concurrentPatterns = {
     commentaire: {
         pattern: /([a-zA-Z0-9_]+)\nil y a (.*?)\n(.*?)\n/g,
         structure: {
-            auteur: 1,      // Premier groupe
-            date: 2,        // Deuxième groupe
-            contenu: 3      // Troisième groupe
+            auteur: 1,     // Premier groupe : nom d'utilisateur
+            date: 2,       // Deuxième groupe : nombre (semaines/mois)
+            contenu: 3     // Troisième groupe : le commentaire
         }
     },
-
-    // Pattern pour les marques
-    marque: /marque : ([^,]+)/g,
 
     // Mots-clés pour la détection des langues
     langues: {

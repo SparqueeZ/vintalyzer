@@ -64,7 +64,32 @@ document.getElementById('analyzeButton').addEventListener('click', async () => {
         // 2. Copier tout le contenu
         const contentResult = await chrome.scripting.executeScript({
             target: { tabId: tab.id },
-            func: () => document.body.innerText
+            func: () => {
+                // Trouver tous les articles
+                const articles = Array.from(document.querySelectorAll('[data-testid="item-card"], [class*="feed-grid"] [class*="item-card"], .feed-grid__item'));
+                const articlesData = [];
+
+                for (const article of articles) {
+                    try {
+                        // Récupérer la marque (titre)
+                        const titleElement = article.querySelector('[class*="title"], [data-testid*="title"]');
+                        if (!titleElement) continue;
+                        const marque = titleElement.textContent.trim();
+
+                        // Récupérer le prix
+                        const priceElement = article.querySelector('[class*="price"]:not([class*="protection"]), [data-testid*="price"]');
+                        if (!priceElement) continue;
+                        const prix = priceElement.textContent.trim();
+
+                        // Format : "marque : prix"
+                        articlesData.push(`marque : ${marque}, prix : ${prix}`);
+                    } catch (e) {
+                        console.error('Erreur sur un article:', e);
+                    }
+                }
+
+                return articlesData.join('\n');
+            }
         });
 
         if (!contentResult[0]?.result) {

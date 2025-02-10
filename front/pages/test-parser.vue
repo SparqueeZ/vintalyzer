@@ -303,8 +303,22 @@
               </div>
               <div>
                 <p class="font-semibold">Articles</p>
-                <p>{{ concurrentResult.boutique.articles }}</p>
+                <p>{{ concurrentResult.articles.length }}</p>
               </div>
+            </div>
+          </div>
+
+          <div v-if="concurrentResult.top5Marques && concurrentResult.top5Marques.length > 0" class="mt-4">
+            <h4 class="font-bold">🏷️ Top 5 des marques</h4>
+            <div class="grid grid-cols-3 gap-2 text-sm mt-2">
+              <div class="font-semibold">Marque</div>
+              <div class="font-semibold text-center">Nombre</div>
+              <div class="font-semibold text-center">%</div>
+              <template v-for="marque in concurrentResult.top5Marques" :key="marque.marque">
+                <div>{{ marque.marque }}</div>
+                <div class="text-center">{{ marque.nombre }}</div>
+                <div class="text-center">{{ marque.pourcentage.toFixed(1) }}%</div>
+              </template>
             </div>
           </div>
 
