@@ -380,27 +380,32 @@ export const icons = [
     `,
   },
   {
-    name: "dummy",
-    dummy: `
-    
+    name: "sun01",
+    sun01: `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" color="transparent" fill="inherit">
+        <path d="M17 12C17 14.7614 14.7614 17 12 17C9.23858 17 7 14.7614 7 12C7 9.23858 9.23858 7 12 7C14.7614 7 17 9.23858 17 12Z" stroke="inherit" stroke-width="1.5" />
+        <path d="M12 2V3.5M12 20.5V22M19.0708 19.0713L18.0101 18.0106M5.98926 5.98926L4.9286 4.9286M22 12H20.5M3.5 12H2M19.0713 4.92871L18.0106 5.98937M5.98975 18.0107L4.92909 19.0714" stroke="inherit" stroke-width="1.5" stroke-linecap="round" />
+    </svg>
+    `,
+  },
+  {
+    name: "moon01",
+    moon01: `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" color="transparent" fill="inherit">
+        <path d="M20.5 14.469C19.3635 15.0758 18.0654 15.4199 16.687 15.4199C12.2097 15.4199 8.58014 11.7903 8.58014 7.31302C8.58014 5.9346 8.92416 4.63654 9.53102 3.5C5.50093 4.44451 2.5 8.0617 2.5 12.3798C2.5 17.4167 6.58325 21.5 11.6202 21.5C15.9383 21.5 19.5555 18.4991 20.5 14.469Z" stroke="inherit" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
     `,
   },
   {
     name: "dummy",
     dummy: `
-    
+
     `,
   },
   {
     name: "dummy",
     dummy: `
-    
-    `,
-  },
-  {
-    name: "dummy",
-    dummy: `
-    
+
     `,
   },
 ];

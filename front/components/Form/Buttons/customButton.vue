@@ -6,6 +6,8 @@
       disabled: parentProps?.disabled,
       invalid: parentProps?.invalid,
       active,
+      small: parentProps?.small,
+      smallText: parentProps?.smallText,
     }"
     @click="parentProps?.disabled ? null : $emit('click')"
   >
@@ -16,6 +18,7 @@
 
 <script setup lang="ts">
 import Icon from "~/components/Icon.vue";
+
 const props = defineProps({
   parentProps: Object,
   active: Boolean,
@@ -72,6 +75,13 @@ const props = defineProps({
   &.active {
     background-color: var(--color-primary);
     color: var(--color-btn-primary-text);
+  }
+  &.small {
+    padding: 5px 10px;
+    max-height: 30px;
+  }
+  &.smallText {
+    font-size: 0.875rem;
   }
 }
 </style>

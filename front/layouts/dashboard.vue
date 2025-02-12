@@ -22,17 +22,24 @@
             >
               <header class="bg-white shadow-sm">
                 <nav
-                  class="container mx-auto py-4 flex justify-between items-center"
+                  class="container mx-auto p-4 flex justify-between items-center"
                 >
                   <p class="font-bold">Vintalyze</p>
                   <ul class="flex gap-4">
                     <li>
-                      <NuxtLink to="/" class="btn">Return home</NuxtLink>
+                      <NuxtLink to="/">
+                        <DefaultButton
+                          text="Retourner à l'accueil"
+                          small
+                          smallText
+                        />
+                      </NuxtLink>
+                      <!-- <CustomButton small>
+                        <p>Retourner à l'acceuil</p>
+                      </CustomButton> -->
                     </li>
                     <li>
-                      <NuxtLink @click="toggleTheme" class="btn"
-                        >Switch Theme</NuxtLink
-                      >
+                      <ChangeTheme bordered />
                     </li>
                   </ul>
                 </nav>
@@ -64,7 +71,9 @@ import { ref } from "vue";
 import { useTheme } from "~/composables/useTheme";
 import { hasPermission } from "~/assets/js/auth";
 import ProfileCard from "~/components/ProfileCard/ProfileCard.vue";
-import ContextMenu from "~/components/ContextMenu.vue"; // Import ContextMenu
+import ContextMenu from "~/components/ContextMenu.vue";
+import ChangeTheme from "~/components/Buttons/ChangeTheme.vue";
+import DefaultButton from "~/components/Form/Buttons/defaultButton.vue";
 const { currentTheme, toggleTheme } = useTheme();
 const userStore = useUserStore();
 await userStore.fetchUser();
@@ -215,6 +224,14 @@ const handleItemClick = (item) => {
 .fade-enter-to,
 .fade-leave-from {
   opacity: 1;
+}
+
+ul {
+  li {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 }
 
 main {

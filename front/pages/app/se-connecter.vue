@@ -1,6 +1,6 @@
 <template>
   <section class="login-container">
-    <div class="form-container">
+    <!-- <div class="form-container">
       <header>
         <nuxt-link class="logo" to="/">
           <h1>STUD.I</h1>
@@ -29,7 +29,11 @@
       </div>
     </div>
 
-    <div class="image-container"></div>
+     -->
+    <section class="image-container"></section>
+    <section class="form-wrapper">
+      <CreateAccountForm />
+    </section>
   </section>
 </template>
 
@@ -61,7 +65,7 @@ watch(
 
 definePageMeta({
   layout: "no-header",
-  middleware: "light-theme",
+  middleware: "dark-theme",
 });
 </script>
 
@@ -71,17 +75,43 @@ definePageMeta({
   justify-content: center;
   align-items: center;
   height: 100svh;
+  //   background: linear-gradient(
+  //     to right,
+  //     #14172f,
+  //     #131529,
+  //     #111322,
+  //     #10111c,
+  //     #0d0e16
+  //   );
+  background: hsla(205, 46%, 10%, 1);
+
   background: linear-gradient(
-    to right,
-    #14172f,
-    #131529,
-    #111322,
-    #10111c,
-    #0d0e16
+    180deg,
+    hsla(205, 46%, 10%, 1) 0%,
+    hsla(233, 29%, 23%, 1) 50%,
+    hsla(255, 43%, 38%, 1) 100%
   );
+
+  background: -moz-linear-gradient(
+    180deg,
+    hsla(205, 46%, 10%, 1) 0%,
+    hsla(233, 29%, 23%, 1) 50%,
+    hsla(255, 43%, 38%, 1) 100%
+  );
+
+  background: -webkit-linear-gradient(
+    90deg,
+    hsla(205, 46%, 10%, 1) 0%,
+    hsla(233, 29%, 23%, 1) 50%,
+    hsla(255, 43%, 38%, 1) 100%
+  );
+
   background-attachment: fixed;
-  padding: 40px;
+  padding: 20px;
   gap: 3rem;
+  label {
+    color: var(--color-text);
+  }
   .form-container {
     display: flex;
     flex-direction: column;
@@ -139,12 +169,19 @@ definePageMeta({
     }
   }
   .image-container {
-    width: 60%;
+    width: 50%;
     height: 100%;
     background-image: url("../../assets/images/osint.png");
     background-size: cover;
     background-position: center;
-    border-radius: 3rem;
+    border-radius: 10px;
+  }
+  .form-wrapper {
+    width: 50%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 }
 </style>

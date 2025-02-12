@@ -149,7 +149,6 @@ watch(inputValue, (newValue) => {
 .input-container {
   display: flex;
   flex-direction: column;
-  padding: 10px;
   max-width: 350px;
   width: 100%;
   gap: 6px;

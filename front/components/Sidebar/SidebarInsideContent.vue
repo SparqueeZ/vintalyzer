@@ -81,7 +81,6 @@ const handleClick = (item: MenuItem) => {
 .sidebar-content {
   width: 100%;
   height: 100%;
-  border-radius: 10px;
   margin-top: 32px;
   overflow-y: auto;
   color: var(--color-text);

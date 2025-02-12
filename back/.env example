@@ -1,4 +1,4 @@
-DB_USER=username
+DB_USER=user
 DB_PASSWORD=password
 DB_PORT=3306
 DB_NAME=databaseName

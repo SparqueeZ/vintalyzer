@@ -51,7 +51,11 @@ export const useUserStore = defineStore("users", {
         this.user = user.data;
         return user.data;
       } catch (error: any) {
-        this.error = error.message || "Une erreur s'est produite.";
+        if (error.response && error.response.status === 403) {
+          this.error = "Session expirée. Veuillez vous reconnecter.";
+        } else {
+          this.error = error.message || "Une erreur s'est produite.";
+        }
         this.user = {} as User;
         return null;
       } finally {

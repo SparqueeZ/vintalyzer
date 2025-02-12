@@ -1,7 +1,7 @@
 <template>
   <div
     class="button-container"
-    :class="{ disabled, invalid, privateInvalid, cta }"
+    :class="{ disabled, invalid, privateInvalid, cta, small }"
     @click="disabled ? null : $emit('click')"
   >
     <nuxt-link to="" v-if="link">
@@ -33,6 +33,8 @@ const props = defineProps({
   cta: Boolean,
   invalid: Boolean,
   disabled: Boolean,
+  small: Boolean,
+  smallText: Boolean,
 });
 
 const emit = defineEmits(["click"]);
@@ -57,6 +59,9 @@ const privateInvalid = ref(false);
       stroke: var(--color-text);
       fill: none;
     }
+  }
+  &.small {
+    padding: 4px;
   }
 }
 </style>

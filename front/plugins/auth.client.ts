@@ -3,11 +3,10 @@ import { useUserStore } from "@/stores/UserStore";
 
 export default defineNuxtPlugin(async (nuxtApp) => {
   const userStore = useUserStore();
+  const router = nuxtApp.$router;
 
   // Appeler fetchUser pour récupérer les infos utilisateur
   await userStore.fetchUser();
-
-  const router = useRouter();
 
   // Redirection selon l'état de l'utilisateur
   if (userStore.user.id) {

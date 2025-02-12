@@ -1,4 +1,4 @@
-import { ref, watchEffect } from "vue";
+import { ref, watchEffect, computed } from "vue";
 
 export const useTheme = () => {
   const currentTheme = ref("light");
@@ -38,5 +38,9 @@ export const useTheme = () => {
     }
   };
 
-  return { currentTheme, toggleTheme, setTheme };
+  const currentIcon = computed(() => {
+    return currentTheme.value === "light" ? "moon01" : "sun01";
+  });
+
+  return { currentTheme, toggleTheme, setTheme, currentIcon };
 };

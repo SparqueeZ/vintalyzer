@@ -16,7 +16,7 @@
           <NuxtLink to="/" class="btn" @click="logout">Logout</NuxtLink>
         </li>
         <li v-else>
-          <NuxtLink to="/app/login" class="btn">Login</NuxtLink>
+          <NuxtLink to="/app/se-connecter" class="btn">Login</NuxtLink>
         </li>
       </ul>
     </nav>
