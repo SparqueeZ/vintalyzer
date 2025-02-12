@@ -23,13 +23,15 @@ interface ConcurrentState {
   boutique: Boutique | null;
   analyseVentes: AnalyseVentes | null;
   scoringData: any | null;
+  articles: any[] | null;
 }
 
 export const useConcurrentStore = defineStore('concurrent', {
   state: (): ConcurrentState => ({
     boutique: null,
     analyseVentes: null,
-    scoringData: null
+    scoringData: null,
+    articles: null
   }),
 
   actions: {
@@ -53,6 +55,9 @@ export const useConcurrentStore = defineStore('concurrent', {
       if (data.analyseVentes) {
         this.analyseVentes = data.analyseVentes;
       }
+      if (data.articles) {
+        this.articles = data.articles;
+      }
       
       // Préparer les données de scoring
       this.scoringData = {
@@ -60,7 +65,8 @@ export const useConcurrentStore = defineStore('concurrent', {
         rating: this.boutique?.note,
         totalSales: this.analyseVentes?.totalVentes,
         monthlySales: this.analyseVentes?.ventesParMois,
-        internationalSales: this.analyseVentes?.paysActifs?.length
+        internationalSales: this.analyseVentes?.paysActifs?.length,
+        brandsCount: this.articles?.length || 0
       };
     }
   },
@@ -72,6 +78,8 @@ export const useConcurrentStore = defineStore('concurrent', {
     
     getAnalyseVentes: (state): AnalyseVentes | null => state.analyseVentes,
     
-    getScoringData: (state): any | null => state.scoringData
+    getScoringData: (state): any | null => state.scoringData,
+    
+    getArticles: (state): any[] | null => state.articles
   }
 })

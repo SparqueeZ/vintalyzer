@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useDataStore } from '~/stores/dataStore'
 import Chart from 'chart.js/auto'
 
@@ -34,6 +34,8 @@ const chart = ref(null)
 let chartInstance = null
 
 const hasStats = computed(() => {
+  console.log('Store data:', store.analyzedData);
+  console.log('VentesParPays:', store.analyzedData?.boutique?.stats?.ventesParPays);
   return store.analyzedData?.boutique?.stats?.ventesParPays !== undefined
 })
 
@@ -54,7 +56,8 @@ function getCountryName(country: string) {
 const salesData = computed(() => {
   if (!store.analyzedData?.boutique?.stats?.ventesParPays) return {}
   
-  const ventesParPays = store.analyzedData.boutique.stats.ventesParPays
+  const ventesParPays = store.analyzedData.boutique.stats.ventesParPays;
+  console.log('Données des ventes par pays:', ventesParPays);
   return Object.entries(ventesParPays)
     .filter(([_, value]) => value > 0)
     .reduce((acc, [country, value]) => {

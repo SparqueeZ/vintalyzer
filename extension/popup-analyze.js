@@ -65,6 +65,34 @@ document.getElementById('analyzeButton').addEventListener('click', async () => {
         const contentResult = await chrome.scripting.executeScript({
             target: { tabId: tab.id },
             func: () => {
+                // Récupérer le texte brut du profil
+                const profileSection = document.querySelector('main');
+                let profileText = '';
+                
+                if (profileSection) {
+                    // Créer une copie pour manipuler sans affecter la page
+                    const tempProfile = profileSection.cloneNode(true);
+                    
+                    // Supprimer les éléments qu'on ne veut pas inclure
+                    const elementsToRemove = tempProfile.querySelectorAll(
+                        '.feed-grid, [class*="feed-grid"], [class*="catalog"], [class*="button"], script, style'
+                    );
+                    elementsToRemove.forEach(el => el.remove());
+                    
+                    // Extraire le texte et nettoyer
+                    profileText = tempProfile.innerText
+                        .split('\n')
+                        .map(line => line.trim())
+                        .filter(line => line && !line.includes('Modifier mon profil'))
+                        .join('\n');
+                    
+                    // Ne garder que jusqu'à "articles"
+                    const endIndex = profileText.indexOf('articles');
+                    if (endIndex !== -1) {
+                        profileText = profileText.substring(0, endIndex + 8);
+                    }
+                }
+
                 // Trouver tous les articles
                 const articles = Array.from(document.querySelectorAll('[data-testid="item-card"], [class*="feed-grid"] [class*="item-card"], .feed-grid__item'));
                 const articlesData = [];
@@ -88,7 +116,10 @@ document.getElementById('analyzeButton').addEventListener('click', async () => {
                     }
                 }
 
-                return articlesData.join('\n');
+                return {
+                    profile: profileText,
+                    articles: articlesData.join('\n')
+                };
             }
         });
 
@@ -97,14 +128,15 @@ document.getElementById('analyzeButton').addEventListener('click', async () => {
         }
 
         // Afficher le contenu
-        const extractedText = contentResult[0].result;
-        const charCount = extractedText.length;
+        const { profile, articles } = contentResult[0].result;
+        fullText = `=== PROFIL ===\n${profile}\n\n=== ARTICLES ===\n${articles}`;
+        const charCount = fullText.length;
         const stoppedEarly = scrollComplete[0].result.stopped;
         
-        fullText = `=== ANALYSE DE LA BOUTIQUE ===\n` +
+        fullText += `\n\n=== ANALYSE DE LA BOUTIQUE ===\n` +
                   `Nombre de caractères : ${charCount.toLocaleString()}\n` +
                   (stoppedEarly ? '(Arrêté à 15000 caractères)\n' : '') +
-                  `\n${extractedText}`;
+                  `\n`;
         
         content.style.display = 'block';
         content.textContent = fullText;

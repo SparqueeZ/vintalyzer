@@ -284,6 +284,20 @@
         <div class="mb-4">
           <CompetitorProfile :boutique="concurrentResult.boutique" />
         </div>
+
+        <div class="mb-4">
+          <CompetitorSalesChart 
+            :analyseVentes="concurrentResult.analyseVentes"
+            :commentaires="concurrentResult.commentaires"
+          />
+        </div>
+
+        <div class="mb-4">
+          <div class="grid grid-cols-2 gap-4">
+            <CompetitorCountrySales />
+            <CompetitorBrands />
+          </div>
+        </div>
         
         <div class="bg-gray-100 p-4 rounded overflow-auto">
           <div class="mb-4">
@@ -431,6 +445,9 @@ import CompetitorProfile from '~/components/concurrent/CompetitorProfile.vue'
 import CompetitorSalesStats from '~/components/concurrent/CompetitorSalesStats.vue'
 import CompetitorMonthlyStats from '~/components/concurrent/CompetitorMonthlyStats.vue'
 import CompetitorScore from '~/components/concurrent/CompetitorScore.vue'
+import CompetitorCountrySales from '~/components/concurrent/CompetitorCountrySales.vue'
+import CompetitorBrands from '~/components/concurrent/CompetitorBrands.vue'
+import CompetitorSalesChart from '~/components/concurrent/CompetitorSalesChart.vue'
 
 const store = useDataStore()
 const concurrentStore = useConcurrentStore()
@@ -712,14 +729,19 @@ async function analyzeText() {
       const totalSales = Array.from(uniqueSales).length
       const conversionRate = totalViews > 0 ? (totalSales / totalViews) * 100 : 0
 
-      store.setAnalyzedData({
+      const storeData = {
+        boutique: {
+          nom: result.value.boutique,
+          stats: {
+            ventesParPays: result.value.statsVentes?.parPays
+          }
+        },
         ventes: Array.from(uniqueSales).map(key => {
           const [article, prix, date] = key.split('|')
           return {
             article,
             prix: parseFloat(prix),
-            date,
-            marque: article.split(',')[0].trim()
+            date
           }
         }),
         ventes_stat: Array.from(ventesByMarque.entries()).map(([marque, stats]) => ({
@@ -747,7 +769,11 @@ async function analyzeText() {
           totalBoost: totalBoostDepense,
           total: totalVitrineDepense + totalBoostDepense
         }
-      })
+      };
+
+      console.log('Stats ventes par pays:', result.value.statsVentes?.parPays);
+      console.log('Données envoyées au store:', storeData);
+      store.setAnalyzedData(storeData);
     }
 
     // Analyser les commentaires
@@ -817,7 +843,11 @@ async function analyzeConcurrent() {
   logs.value = []
   try {
     concurrentResult.value = await concurrentAnalyzer.analyze(concurrentText.value)
-    concurrentStore.updateConcurrentData(concurrentResult.value)
+    concurrentStore.updateConcurrentData({
+      boutique: concurrentResult.value.boutique,
+      analyseVentes: concurrentResult.value.analyseVentes,
+      articles: concurrentResult.value.articles
+    })
   } catch (error) {
     console.error('Erreur lors de l\'analyse du concurrent:', error)
   }

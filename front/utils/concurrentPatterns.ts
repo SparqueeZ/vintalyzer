@@ -1,9 +1,24 @@
+// Liste des pays reconnus
+const paysReconnus = [
+    'France',
+    'Espagne',
+    'Italie',
+    'Allemagne',
+    'Belgique',
+    'Pays-Bas',
+    'Portugal',
+    'Royaume-Uni',
+    'Suisse',
+    'Luxembourg'
+].join('|');
+
 // Patterns et règles pour l'analyse des concurrents
 export const concurrentPatterns = {
     // Informations de la boutique
     boutique: {
-        nom: /([A-Za-z0-9_]+)\nÀ propos/,
-        pays: /À propos :\n([A-Za-z]+)\n/,
+        // Capture le nom en excluant les chiffres à la fin suivis de "évaluations"
+        nom: /([A-Za-z0-9_]+?)(?:\d+)?\s*évaluations/,
+        pays: new RegExp(`À propos :(?:[^,]*,\\s*)?\\s*(${paysReconnus})(?:C|$)`),
         abonnes: /(\d+)\nAbonné/,
         note: /\n(\d\.\d)\n/,
         articles: /(\d+) articles/,
@@ -220,11 +235,59 @@ export const concurrentRules = {
 
     // Règles d'analyse des données
     analyse: {
-        // Calculer le prix moyen des articles
+        // Calculer le prix moyen des articles avec des ajustements pour plus de précision
         prixMoyen: (articles: any[]) => {
             if (!articles.length) return 0;
-            const total = articles.reduce((sum, article) => sum + article.prix, 0);
-            return total / articles.length;
+            
+            // Trier les prix par ordre croissant
+            const prix = articles.map(a => a.prix).sort((a, b) => a - b);
+            
+            // Calculer Q1 (25%) et Q3 (75%) pour détecter les outliers
+            const q1Index = Math.floor(prix.length * 0.25);
+            const q3Index = Math.floor(prix.length * 0.75);
+            const q1 = prix[q1Index];
+            const q3 = prix[q3Index];
+            const iqr = q3 - q1;
+            
+            // Définir les limites pour les outliers (1.5 * IQR)
+            const lowerBound = q1 - (1.5 * iqr);
+            const upperBound = q3 + (1.5 * iqr);
+            
+            // Filtrer les prix en excluant les outliers
+            const prixFiltres = prix.filter(p => p >= lowerBound && p <= upperBound);
+            
+            // Calculer la médiane des prix filtrés
+            const medianIndex = Math.floor(prixFiltres.length / 2);
+            let prixMedian;
+            if (prixFiltres.length % 2 === 0) {
+                prixMedian = (prixFiltres[medianIndex - 1] + prixFiltres[medianIndex]) / 2;
+            } else {
+                prixMedian = prixFiltres[medianIndex];
+            }
+            
+            // Calculer la moyenne des prix filtrés
+            const moyenne = prixFiltres.reduce((sum, p) => sum + p, 0) / prixFiltres.length;
+            
+            // Utiliser une moyenne pondérée entre la médiane (60%) et la moyenne (40%)
+            let prixFinal = (prixMedian * 0.6) + (moyenne * 0.4);
+            
+            // Appliquer une réduction progressive selon le nombre d'articles
+            // Plus il y a d'articles, plus on réduit le prix moyen
+            const reductionFactors = [
+                { seuil: 50, reduction: 0.95 },   // -5% si plus de 50 articles
+                { seuil: 100, reduction: 0.93 },  // -7% si plus de 100 articles
+                { seuil: 200, reduction: 0.90 },  // -10% si plus de 200 articles
+                { seuil: 500, reduction: 0.85 }   // -15% si plus de 500 articles
+            ];
+            
+            // Trouver le facteur de réduction approprié
+            const factor = reductionFactors
+                .reverse()
+                .find(f => articles.length >= f.seuil)?.reduction || 1;
+            
+            prixFinal *= factor;
+            
+            return Math.round(prixFinal * 100) / 100; // Arrondir à 2 décimales
         },
 
         // Identifier les marques les plus fréquentes
@@ -273,19 +336,24 @@ export const concurrentRules = {
                 }
             });
 
-            // Calculer les pourcentages
-            const ventesCommentees = commentaires.length;
+            // Calculer les pourcentages (exclure la France)
+            const ventesInternationales = Object.entries(venteParPays)
+                .filter(([pays]) => pays !== 'France')
+                .reduce((acc, [_, count]) => acc + count, 0);
+
             const pourcentages: { [key: string]: number } = {};
             for (const [pays, nombre] of Object.entries(venteParPays)) {
-                pourcentages[pays] = (nombre / ventesCommentees) * 100;
+                if (pays !== 'France') {
+                    pourcentages[pays] = ventesInternationales > 0 ? (nombre / ventesInternationales) * 100 : 0;
+                }
             }
 
             return {
                 totalVentes: totalEvaluations,
                 ventesParPays: venteParPays,
                 pourcentagesParPays: pourcentages,
-                ventesCommentees: ventesCommentees,
-                ventesNonCommentees: totalEvaluations - ventesCommentees
+                ventesCommentees: commentaires.length,
+                ventesNonCommentees: totalEvaluations - commentaires.length
             };
         },
 

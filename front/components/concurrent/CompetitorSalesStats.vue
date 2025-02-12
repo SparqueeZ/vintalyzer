@@ -15,16 +15,61 @@
         {{ periodText }}
       </div>
 
-      <div class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-3 gap-4">
         <div>
-          <p class="text-xs text-white/50">CA total</p>
+          <div class="flex items-center justify-between">
+            <p class="text-xs text-white/50 flex items-center">
+              CA total
+              <span class="relative ml-1">
+                <span class="cursor-help text-gray-500 hover:text-purple-400" @mouseenter="showCATooltip = true" @mouseleave="showCATooltip = false">
+                  <span class="w-4 h-4 inline-flex items-center justify-center rounded-full border border-current">
+                    i
+                  </span>
+                </span>
+                <div v-show="showCATooltip" class="absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 p-2 text-xs text-gray-300 bg-gray-900 rounded shadow-lg border border-gray-700">
+                  <p class="mb-1">Le chiffre d'affaires est calculé comme suit :</p>
+                  <ul class="space-y-1 text-gray-400">
+                    <li>• Nombre total de ventes × Prix moyen</li>
+                  </ul>
+                </div>
+              </span>
+            </p>
+          </div>
           <div class="flex items-baseline gap-1">
             <span class="text-2xl font-bold text-emerald-400">{{ formattedCA }}</span>
             <span class="text-xs text-white/50">€</span>
           </div>
         </div>
         <div>
-          <p class="text-xs text-white/50">Prix moyen</p>
+          <p class="text-xs text-white/50">Total commandes</p>
+          <div class="flex items-baseline gap-1">
+            <span class="text-2xl font-bold text-violet-400">{{ formattedOrders }}</span>
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center justify-between">
+            <p class="text-xs text-white/50 flex items-center">
+              Prix moyen 
+              <span class="relative ml-1">
+                <span class="cursor-help text-gray-500 hover:text-purple-400" @mouseenter="showTooltip = true" @mouseleave="showTooltip = false">
+                  <span class="w-4 h-4 inline-flex items-center justify-center rounded-full border border-current">
+                    i
+                  </span>
+                </span>
+                <div v-show="showTooltip" class="absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 p-2 text-xs text-gray-300 bg-gray-900 rounded shadow-lg border border-gray-700">
+                  <p class="mb-1">Le prix moyen est calculé avec plusieurs ajustements :</p>
+                  <ul class="space-y-1 text-gray-400">
+                    <li>• Exclusion des prix anormalement bas ou élevés</li>
+                    <li>• Combinaison médiane (60%) et moyenne (40%)</li>
+                    <li>• Réduction progressive :</li>
+                    <li class="ml-2">-5% si +50 articles</li>
+                    <li class="ml-2">-7% si +100 articles</li>
+                    <li class="ml-2">-10% si +200 articles</li>
+                  </ul>
+                </div>
+              </span>
+            </p>
+          </div>
           <div class="flex items-baseline gap-1">
             <span class="text-2xl font-bold text-violet-400">{{ formattedAvgPrice }}</span>
             <span class="text-xs text-white/50">€</span>
@@ -64,6 +109,9 @@ const props = withDefaults(defineProps<Props>(), {
 
 const chartRef = ref<HTMLCanvasElement | null>(null)
 let chart: Chart | null = null
+
+const showTooltip = ref(false)
+const showCATooltip = ref(false)
 
 const hasData = computed(() => {
   return props.analyseVentes?.totalVentes && props.analyseVentes.totalVentes > 0

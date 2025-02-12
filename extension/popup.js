@@ -47,7 +47,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     let profileText = '';
                     let profileJson = {
                         email: '',
-                        evaluations: ''
+                        evaluations: '',
+                        nom: '',
+                        abonnes: ''
                     };
 
                     if (mainContent) {
@@ -61,6 +63,23 @@ document.addEventListener('DOMContentLoaded', function() {
                         const evaluationsElement = mainContent.querySelector('[class*="rating"], [class*="evaluations"]');
                         if (evaluationsElement) {
                             profileJson.evaluations = evaluationsElement.textContent.trim();
+                        }
+
+                        // Extraire le nom de la boutique (après le @)
+                        const nomElement = mainContent.querySelector('h1, [class*="title"]');
+                        if (nomElement) {
+                            const fullText = nomElement.textContent.trim();
+                            const atIndex = fullText.indexOf('@');
+                            if (atIndex !== -1) {
+                                profileJson.nom = fullText.substring(atIndex + 1);
+                            }
+                        }
+
+                        // Extraire le nombre d'abonnés
+                        const abonnesText = mainContent.innerText;
+                        const abonnesMatch = abonnesText.match(/(\d+)\s*Abonnés/);
+                        if (abonnesMatch) {
+                            profileJson.abonnes = abonnesMatch[1];
                         }
 
                         // Ajouter le JSON au début du texte complet

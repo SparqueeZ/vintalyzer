@@ -90,9 +90,7 @@ const hasData = computed(() => !!props.boutique)
 
 const location = computed(() => {
   const { localisation } = props.boutique
-  return localisation?.ville
-    ? `${localisation.ville}, ${localisation.pays}`
-    : `Inconnue, ${localisation?.pays || 'Non renseigné'}`
+  return localisation?.pays || 'Non renseigné'
 })
 
 const formattedNote = computed(() => {

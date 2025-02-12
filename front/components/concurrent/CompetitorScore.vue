@@ -7,7 +7,8 @@
         </svg>
         Score Boutique
       </h2>
-      <div :class="levelClass" class="text-sm font-medium px-3 py-1 rounded-full">
+      <div :class="levelClass" class="text-sm font-medium px-3 py-1 rounded-full flex items-center">
+        <span class="mr-1">{{ levelBadge }}</span>
         {{ scoreResult?.level?.name }}
       </div>
     </div>
@@ -86,7 +87,7 @@
           <div class="flex justify-between items-center">
             <span class="text-sm text-white/50">Mensuel</span>
             <span class="text-sm font-medium text-white/80">
-              {{ scoreResult?.details.sales.monthlySales }}/15 ({{ monthlySales }} commandes/mois)
+              {{ scoreResult?.details.sales.monthlySales }}/15 ({{ monthlySalesText }})
             </span>
           </div>
         </div>
@@ -104,9 +105,37 @@
           <div class="flex justify-between items-center">
             <span class="text-sm text-white/50">International</span>
             <span class="text-sm font-medium text-white/80">
-              {{ scoreResult?.details.diversification.international }}/20 ({{ internationalSales }} pays)
+              {{ scoreResult?.details.diversification.international }}/20 ({{ internationalText }})
             </span>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-6 bg-[#1a1b23]/50 rounded-lg p-4 border-l-2" :style="{ borderColor: scoreResult?.level?.color }">
+      <div class="space-y-4">
+        <!-- Description générale -->
+        <div>
+          <h3 class="text-lg font-semibold text-white/90">{{ scoreResult?.level?.name }}</h3>
+          <p class="text-sm text-white/60 mt-1">{{ scoreResult?.level?.description }}</p>
+        </div>
+
+        <!-- Analyse de niche -->
+        <div>
+          <h4 class="text-sm font-semibold text-white/80 mb-2">Analyse de Niche</h4>
+          <p class="text-sm text-white/60">{{ scoreResult?.level?.nicheAnalysis }}</p>
+        </div>
+
+        <!-- Points clés -->
+        <div>
+          <h4 class="text-sm font-semibold text-white/80 mb-2">Points Clés</h4>
+          <ul class="grid grid-cols-2 gap-2">
+            <li v-for="(tip, index) in scoreResult?.level?.tips" :key="index"
+                class="text-sm text-white/60 flex items-center">
+              <span class="text-violet-400 mr-2">•</span>
+              {{ tip }}
+            </li>
+          </ul>
         </div>
       </div>
     </div>
@@ -138,7 +167,33 @@ const scoreResult = ref<ScoringResult | null>(null)
 const isElite = computed(() => scoreResult.value?.level?.name === 'Boutique Elite')
 const hasHighMonthlySales = computed(() => (scoreResult.value?.details.sales.monthlySales || 0) >= 15)
 const hasLargeCommunity = computed(() => (scoreResult.value?.details.engagement.subscribers || 0) >= 10)
-const hasInternationalPresence = computed(() => (scoreResult.value?.details.diversification.international || 0) >= 15)
+const hasInternationalPresence = computed(() => internationalSales.value >= 3)
+
+const monthlySales = computed(() => {
+  const totalVentes = analyseVentes.value?.totalVentes || 0
+  return totalVentes / 12 // Estimation sur 12 mois comme dans analyseStatistiquesTemporelles
+})
+
+const monthlySalesText = computed(() => {
+  const sales = monthlySales.value
+  if (sales >= 30) return `${sales.toFixed(1)} commandes/mois 🌟`
+  if (sales >= 15) return `${sales.toFixed(1)} commandes/mois ⭐`
+  return `${sales.toFixed(1)} commandes/mois`
+})
+
+const internationalSales = computed(() => {
+  const ventesParPays = analyseVentes.value?.ventesParPays || {}
+  return Object.entries(ventesParPays)
+    .filter(([pays, ventes]) => pays !== 'France' && ventes > 0)
+    .length
+})
+
+const internationalText = computed(() => {
+  const count = internationalSales.value
+  if (count >= 3) return `${count} pays 🌍`
+  if (count >= 2) return `${count} pays ⭐`
+  return `${count} pays`
+})
 
 const engagementTotal = computed(() => {
   const details = scoreResult.value?.details.engagement
@@ -154,20 +209,24 @@ const diversificationTotal = computed(() => {
   return scoreResult.value?.details.diversification.international || 0
 })
 
-const monthlySales = computed(() => analyseVentes.value?.ventesParMois || 0)
-const internationalSales = computed(() => analyseVentes.value?.paysActifs?.length || 0)
+const levelBadge = computed(() => {
+  const score = scoreResult.value?.scoreOn100 || 0
+  if (score >= 90) return '🏆' // Elite - Or
+  if (score >= 75) return '🥈' // Pro - Argent
+  if (score >= 60) return '🥉' // Active - Bronze
+  if (score >= 40) return '🌱' // Développement - Pousse
+  return '🆕' // Débutante - Nouveau
+})
 
 const levelClass = computed(() => {
   if (!scoreResult.value?.level) return ''
   
-  if (scoreResult.value.level.name === 'Boutique Elite') {
-    return 'bg-gradient-to-r from-amber-400 to-amber-600 text-black font-bold'
-  }
-  
-  return {
-    backgroundColor: `${scoreResult.value.level.color}20`,
-    color: scoreResult.value.level.color
-  }
+  const score = scoreResult.value.scoreOn100
+  if (score >= 90) return 'bg-amber-400/20 text-amber-400 animate-pulse'
+  if (score >= 75) return 'bg-gray-400/20 text-gray-400'
+  if (score >= 60) return 'bg-orange-700/20 text-orange-700'
+  if (score >= 40) return 'bg-green-600/20 text-green-600'
+  return 'bg-blue-500/20 text-blue-500'
 })
 
 // Méthodes pour les charts
@@ -282,8 +341,8 @@ watch([boutique, analyseVentes], () => {
     subscribers: boutique.value.abonnes,
     rating: boutique.value.note,
     totalSales: analyseVentes.value.totalVentes,
-    monthlySales: analyseVentes.value.ventesParMois,
-    internationalSales: analyseVentes.value.paysActifs?.length || 0
+    monthlySales: analyseVentes.value.totalVentes / 12,
+    internationalSales: internationalSales.value
   }
 
   scoreResult.value = calculateScore(scoringData)
@@ -298,8 +357,8 @@ onMounted(() => {
       subscribers: boutique.value.abonnes,
       rating: boutique.value.note,
       totalSales: analyseVentes.value.totalVentes,
-      monthlySales: analyseVentes.value.ventesParMois,
-      internationalSales: analyseVentes.value.paysActifs?.length || 0
+      monthlySales: analyseVentes.value.totalVentes / 12,
+      internationalSales: internationalSales.value
     }
 
     scoreResult.value = calculateScore(scoringData)

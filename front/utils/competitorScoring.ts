@@ -9,6 +9,9 @@ interface RankingLevel {
   max: number;
   name: string;
   color: string;
+  description: string;
+  nicheAnalysis: string;
+  tips: string[];
 }
 
 interface ScoringCategory {
@@ -118,11 +121,76 @@ export const scoringRules: ScoringRules = {
     }
   },
   rankingLevels: [
-    { min: 90, max: 100, name: 'Boutique Elite', color: '#FFD700' },       
-    { min: 75, max: 89, name: 'Boutique Professionnelle', color: '#C0C0C0' }, 
-    { min: 60, max: 74, name: 'Boutique Active', color: '#CD7F32' },       
-    { min: 40, max: 59, name: 'Boutique en Développement', color: '#4CAF50' }, 
-    { min: 0, max: 39, name: 'Boutique Débutante', color: '#2196F3' }      
+    { 
+      min: 90, 
+      max: 100, 
+      name: 'Boutique Elite', 
+      color: '#FFD700',
+      description: "Niche très rentable avec plus de 30 ventes/mois et une présence internationale établie.",
+      nicheAnalysis: "Marché validé et rentable : forte demande internationale, excellente marge avec un prix moyen élevé. Potentiel de scaling important.",
+      tips: [
+        "💰 +30 ventes mensuelles = forte rentabilité",
+        "🌍 Marché validé dans 3+ pays",
+        "⭐ Note 4.8/5 = produits validés",
+        "📈 Marge optimisée par volume"
+      ]
+    },
+    { 
+      min: 75, 
+      max: 89, 
+      name: 'Boutique Professionnelle', 
+      color: '#C0C0C0',
+      description: "Niche profitable avec 15-30 ventes/mois et un début d'expansion internationale.",
+      nicheAnalysis: "Marché porteur : demande régulière, bonne rentabilité. Potentiel d'optimisation des marges par le volume.",
+      tips: [
+        "💰 15-30 ventes/mois = bonne rentabilité",
+        "🌍 2-3 pays = marché extensible",
+        "⭐ Note 4.5+/5 = qualité validée",
+        "📊 Volume suffisant pour négocier les prix"
+      ]
+    },
+    { 
+      min: 60, 
+      max: 74, 
+      name: 'Boutique Active', 
+      color: '#CD7F32',
+      description: "Niche émergente avec 5-15 ventes/mois. Premiers signaux de rentabilité.",
+      nicheAnalysis: "Marché en validation : demande existante, rentabilité à optimiser. Potentiel de croissance identifié.",
+      tips: [
+        "💰 5-15 ventes/mois = rentabilité croissante",
+        "📈 Marge à optimiser par le volume",
+        "🎯 Niche spécifique identifiée",
+        "💡 Potentiel d'expansion visible"
+      ]
+    },
+    { 
+      min: 40, 
+      max: 59, 
+      name: 'Boutique en Développement', 
+      color: '#4CAF50',
+      description: "Test de marché avec 2-5 ventes/mois. Phase de validation de la demande.",
+      nicheAnalysis: "Marché en test : premières ventes encourageantes mais rentabilité à prouver. Ajustements nécessaires.",
+      tips: [
+        "📊 2-5 ventes/mois = validation en cours",
+        "💰 Marge à calculer sur volume",
+        "🎯 Niche à affiner",
+        "📈 Potentiel à confirmer"
+      ]
+    },
+    { 
+      min: 0, 
+      max: 39, 
+      name: 'Boutique Débutante', 
+      color: '#2196F3',
+      description: "Démarrage avec <2 ventes/mois. Phase d'exploration du marché.",
+      nicheAnalysis: "Marché à tester : premières transactions mais rentabilité non prouvée. Pivot possible nécessaire.",
+      tips: [
+        "📊 <2 ventes/mois = phase test",
+        "🎯 Niche à valider",
+        "💰 Rentabilité à prouver",
+        "⚠️ Pivot possible si non rentable"
+      ]
+    }
   ]
 };
 
