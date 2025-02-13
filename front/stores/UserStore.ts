@@ -20,6 +20,41 @@ export const useUserStore = defineStore("users", {
     error: null as string | null,
   }),
   actions: {
+    async register(
+      email: string,
+      password: string,
+      lastname: string,
+      firstname: string,
+      role: Role,
+      acceptConditions: boolean
+    ) {
+      this.loading = true;
+      this.error = null;
+
+      if (!acceptConditions) {
+        this.error = "Vous devez accepter les conditions d'utilisation.";
+        this.loading = false;
+        return;
+      }
+
+      try {
+        const response = await axios.post("/api/auth/register", {
+          email,
+          password,
+          lastname,
+          firstname,
+          role,
+        });
+        if (response.status === 200) {
+          const user = await axios.get("/api/auth/user");
+          this.user = user.data;
+        }
+      } catch (error: any) {
+        this.error = error.message || "Une erreur s'est produite.";
+      } finally {
+        this.loading = false;
+      }
+    },
     async login(email: string, password: string) {
       this.user = {} as User;
       this.loading = true;

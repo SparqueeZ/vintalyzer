@@ -47,7 +47,7 @@ const userStore = useUserStore();
 const router = useRouter();
 
 const email = ref<string>("baptiste.dijouxn8@gmail.com");
-const password = ref<string>("testo");
+const password = ref<string>("test");
 
 const login = () => {
   userStore.login(email.value, password.value);
@@ -171,7 +171,8 @@ definePageMeta({
   .image-container {
     width: 50%;
     height: 100%;
-    background-image: url("../../assets/images/osint.png");
+    // background-image: url("../../assets/images/osint.png");
+    background-color: red;
     background-size: cover;
     background-position: center;
     border-radius: 10px;

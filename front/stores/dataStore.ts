@@ -1,34 +1,39 @@
-import { defineStore } from "pinia";
+import { defineStore } from 'pinia'
 
-export const useDataStore = defineStore("dataStore", {
+export const useDataStore = defineStore('dataStore', {
   state: () => ({
-    analyzedData: null as any,
+    analyzedData: null as any
   }),
-
+  
   actions: {
     setAnalyzedData(data: any) {
-      this.analyzedData = data;
-    },
+      this.analyzedData = data
+    }
   },
 
   getters: {
     hasVentes: (state) => state.analyzedData?.ventes?.length > 0,
     getVentes: (state) => state.analyzedData?.ventes || [],
     getVentesParJour: (state) => {
-      if (!state.analyzedData?.ventes) return [];
-
-      const ventesMap = new Map();
+      if (!state.analyzedData?.ventes) return []
+      
+      const ventesMap = new Map()
       state.analyzedData.ventes.forEach((vente: any) => {
-        const date = new Date(vente.date).toISOString().split("T")[0];
-        ventesMap.set(date, (ventesMap.get(date) || 0) + 1);
-      });
-
+        const date = new Date(vente.date).toISOString().split('T')[0]
+        ventesMap.set(date, (ventesMap.get(date) || 0) + 1)
+      })
+      
       return Array.from(ventesMap.entries())
         .map(([date, count]) => ({
           date: new Date(date),
-          count,
+          count
         }))
-        .sort((a, b) => a.date.getTime() - b.date.getTime());
+        .sort((a, b) => a.date.getTime() - b.date.getTime())
     },
-  },
-});
+    
+    // Utilise les stats pré-calculées
+    getTotalViews: (state) => state.analyzedData?.stats?.totalViews || 0,
+    getTotalSales: (state) => state.analyzedData?.stats?.totalSales || 0,
+    getConversionRate: (state) => state.analyzedData?.stats?.conversionRate || 0,
+  }
+})

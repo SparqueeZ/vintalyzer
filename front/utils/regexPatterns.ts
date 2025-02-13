@@ -1,46 +1,55 @@
 export const patterns = {
-  // Info basique boutique
-  username: /([A-Za-z0-9_]+)\nÀ propos/,
-  nom: /Rechercher des membres\s*\n\s*([^\n]+?)(?=\s*Pro|\s*@|$)/m,
-  localisation: /À propos :[\s\n]*([^,\n]+),\s*([^\n]+)/,
-  email: /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/,
-  telephone: /(\+\d{11})/,
+  // Pour extraire le nom de la boutique
+  boutiqueName: /^([^@]+)@[^\n]+/,
 
-  // Info entreprise
-  numeroEntreprise: /Numéro d'entreprise[^\d]*(\d+)/,
-  rcs: /(\d+)\s*R\.C\.S\s*([^\n]+)/,
+  // Pour extraire le nombre d'abonnés
+  abonnes: /(\d+)Abonnés/,
 
-  // Stats et évaluations
-  note: /\n([0-9]\.[0-9])\n\n\([0-9]+\)/,
-  commentaire: /(?:il y a [^\n]+)\n([^\n]+?)(?:\nTraduire|\n|$)/g,
-  abonnes: /(\d+)\s*Abonnés/,
-  articlesActifs: /(\d+)\s*articles(?![^{]*vendus)/,
+  // Pour extraire les statistiques de vente (nom article, marque optionnelle, prix, vues)
+  venteStats:
+    /^(?!=== ARTICLES ===)([^,]+?)(?:, marque: ([^,]+?))?(?:, état:.*?, |, état:.*?taille:.*?, )(\d+,\d{2}) €.*?\nVendu\n(\d+) vues$/gm,
 
-  // Ventes
-  venteAvecDate:
-    /(?:Vente|Paiements de Vinted)\n([^€\n]+)\n(\d+[,.]\d{2}) ?€\n(\d{1,2} \w+ 2024)/g,
-  venteStat:
-    /([^,]+), prix : (\d+[,.]\d{2}) €, marque : ([^\n]+?)(?:, taille[^\n]+)?\nVendu\n(\d+) vues\n\n(\d+) favoris/g,
+  // Pour extraire les sections de transactions
+  transactionSection:
+    /=== TRANSACTIONS ([a-zÀ-ÿ]+ \d{4}) ===([\s\S]*?)(?=\n=== TRANSACTIONS|$)/gm,
 
-  // Marketing et finances
-  boost: /(\d{1,2} \w+ 2024)\nCommande d'un Boost[^€]*-(\d+[,.]\d{2}) ?€/g,
+  // Pour extraire la localisation
+  localisation: /À propos :([^,]+),([^v]+)/,
+
+  // Pour extraire les commentaires
+  comments:
+    /^([^\n]+)\nil y a [^\n]+\n([^\n]+?)(?:\n\n(?:ambiancestickers|Répondre|Modifier|Supprimer|Traduire))/gm,
+
+  // Pour extraire les ventes réelles avec dates et détails complets
+  realSales:
+    /(?:Vente|Paiements[ \u00A0]de[ \u00A0]Vinted)\n([^\n]+)\n([0-9,]+)[ \u00A0]€\n(\d{1,2} [a-zÀ-ÿ]+ \d{4})/gm,
+
+  // Pour extraire les dépenses de vitrine
   vitrine:
-    /(\d{1,2} \w+ 2024)\nCommande Dressing en vitrine[^€]*-(\d+[,.]\d{2}) ?€/g,
-  transfert:
-    /(\d{1,2} \w+ 2024)\nTransfert vers le compte[^€]*-(\d+[,.]\d{2}) ?€/g,
-  solde: /Solde final\s+(\d+[,.]\d{2})\s*€/,
+    /Commande Dressing en vitrine\n(-[0-9,]+)[ \u00A0]€\n(\d{1,2} [a-zÀ-ÿ]+ \d{4})/gm,
+
+  // Pour extraire les dépenses de boost
+  boost:
+    /Commande d'un Boost\n(?:1 article\n)?(-[0-9,]+)[ \u00A0]€\n(\d{1,2} [a-zÀ-ÿ]+ \d{4})/gm,
+
+  // Pour extraire les achats
+  achats: /Achat\n([^\n]+)\n(-[0-9,]+)[ \u00A0]€\n(\d{1,2} [a-zÀ-ÿ]+ \d{4})/gm,
 };
 
 export const extractors = {
   extract: (pattern: RegExp, str: string, group = 1): string | null => {
-    const match = str.match(pattern);
+    // Créer une nouvelle instance du pattern
+    const regex = new RegExp(pattern.source, pattern.flags);
+    const match = regex.exec(str);
     return match ? match[group] : null;
   },
 
   extractAll: (pattern: RegExp, str: string): RegExpExecArray[] => {
     const matches: RegExpExecArray[] = [];
-    let match: RegExpExecArray | null;
-    while ((match = pattern.exec(str)) !== null) {
+    // Créer une nouvelle instance du pattern
+    const regex = new RegExp(pattern.source, pattern.flags);
+    let match;
+    while ((match = regex.exec(str)) !== null) {
       matches.push(match);
     }
     return matches;

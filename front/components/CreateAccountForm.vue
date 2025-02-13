@@ -1,6 +1,6 @@
 <template>
   <section class="create-account-form-container">
-    <h1>Créer un compte</h1>
+    <h1 class="title">Créer un compte</h1>
     <p>Vous avez déjà un compte ? Connectez-vous.</p>
 
     <form @submit.prevent="register">
@@ -56,11 +56,29 @@ import InputEmail from "~/components/Form/InputEmail.vue";
 import InputPassword from "~/components/Form/InputPassword.vue";
 import CheckBox from "~/components/Form/CheckBox.vue";
 import DefaultButton from "~/components/Form/Buttons/defaultButton.vue";
+const userStore = useUserStore();
+
+const lastname = ref<string>("");
+const firstname = ref<string>("");
+const email = ref<string>("");
+const password = ref<string>("");
+const confirmPassword = ref<string>("");
+const acceptConditions = ref<boolean>(false);
+
+const register = () => {
+  console.log("register");
+};
 </script>
 
 <style scoped lang="scss">
 .create-account-form-container {
+  height: 100%;
   color: var(--color-text);
+  .title {
+    font-size: 6rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
   form {
     max-width: 350px;
   }
