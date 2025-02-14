@@ -18,7 +18,7 @@ export const patterns = {
 
   // Pour extraire les commentaires
   comments:
-    /^([^\n]+)\nil y a [^\n]+\n([^\n]+?)(?:\n\n(?:ambiancestickers|Répondre|Modifier|Supprimer|Traduire))/gm,
+    /^([^\n]+)\n(il y a [^\n]+)\n((?:[^\n]|\n(?!\n(?:ambiancestickers|Répondre|Modifier|Supprimer|Traduire)))+)/gm,
 
   // Pour extraire les ventes réelles avec dates et détails complets
   realSales:
