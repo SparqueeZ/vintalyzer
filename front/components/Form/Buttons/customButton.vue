@@ -1,5 +1,5 @@
 <template>
-  <div
+  <button
     class="button"
     :class="{
       cta: parentProps?.cta,
@@ -9,11 +9,12 @@
       small: parentProps?.small,
       smallText: parentProps?.smallText,
     }"
+    :type="parentProps?.type"
     @click="parentProps?.disabled ? null : $emit('click')"
   >
     <slot></slot>
     <slot name="events" />
-  </div>
+  </button>
 </template>
 
 <script setup lang="ts">
@@ -58,6 +59,7 @@ const props = defineProps({
     background-color: var(--color-btn-disabled-bg);
     &:hover {
       border: 1px solid var(--color-border);
+      background-color: var(--color-btn-disabled-bg);
     }
   }
   &.invalid {

@@ -70,7 +70,7 @@ input[type="checkbox"] {
     input[type="checkbox"] {
       --color-primary-inner: #fff;
       --focus: 2px rgba(39, 94, 254, 0.3);
-      --border: #bbc1e1;
+      --border: var(--color-border);
       --background: #fff;
       --disabled: #f6f8ff;
       --disabled-inner: #e1e6f9;

@@ -1,57 +1,45 @@
 <template>
   <section class="login-container">
-    <!-- <div class="form-container">
-      <header>
-        <nuxt-link class="logo" to="/">
-          <h1>STUD.I</h1>
-        </nuxt-link>
-      </header>
-      <div class="form">
-        <h2 class="welcome-title">Heureux de vous revoir !</h2>
-
-        <form class="" @submit.prevent="login">
-          <InputEmail
-            label="Email"
-            icon="mail01"
-            v-model:modelValue="email"
-            :value="email"
-            placeholder="john.doe@gmail.com"
-          />
-          <InputPassword
-            label="Password"
-            icon="lock01"
-            :value="password"
-            v-model:modelValue="password"
-            placeholder="Mot de passe"
-          />
-          <button type="submit">Login</button>
-        </form>
-      </div>
-    </div>
-
-     -->
+    <Transition name="login">
+      <section
+        class="login-form-wrapper"
+        v-if="userStore.loginPage === 'login'"
+      >
+        <LoginAccountForm />
+      </section>
+    </Transition>
     <section class="image-container"></section>
-    <section class="form-wrapper">
-      <CreateAccountForm />
-    </section>
+    <transition name="register">
+      <section
+        class="register-form-wrapper"
+        v-if="userStore.loginPage === 'register'"
+      >
+        <CreateAccountForm />
+      </section>
+    </transition>
+
+    <transition name="register">
+      <section
+        class="password-forgot-form-wrapper"
+        v-if="userStore.loginPage === 'forgotPassword'"
+      >
+        <ForgotPasswordForm />
+      </section>
+    </transition>
   </section>
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from "vue";
 import { useRouter } from "vue-router";
-import InputEmail from "~/components/Form/InputEmail.vue";
-import InputPassword from "~/components/Form/InputPassword.vue";
+import LoginAccountForm from "~/components/Login/LoginAccountForm.vue";
+import CreateAccountForm from "~/components/Login/CreateAccountForm.vue";
+import ForgotPasswordForm from "~/components/Login/ForgotPasswordForm.vue";
 
 const userStore = useUserStore();
 const router = useRouter();
 
-const email = ref<string>("baptiste.dijouxn8@gmail.com");
-const password = ref<string>("test");
-
-const login = () => {
-  userStore.login(email.value, password.value);
-};
+const forgotPassword = ref<boolean>(false);
 
 watch(
   () => userStore.user,
@@ -75,35 +63,16 @@ definePageMeta({
   justify-content: center;
   align-items: center;
   height: 100svh;
-  //   background: linear-gradient(
-  //     to right,
-  //     #14172f,
-  //     #131529,
-  //     #111322,
-  //     #10111c,
-  //     #0d0e16
-  //   );
-  background: hsla(205, 46%, 10%, 1);
+  overflow: hidden;
 
+  background: rgb(2, 0, 36);
   background: linear-gradient(
-    180deg,
-    hsla(205, 46%, 10%, 1) 0%,
-    hsla(233, 29%, 23%, 1) 50%,
-    hsla(255, 43%, 38%, 1) 100%
-  );
-
-  background: -moz-linear-gradient(
-    180deg,
-    hsla(205, 46%, 10%, 1) 0%,
-    hsla(233, 29%, 23%, 1) 50%,
-    hsla(255, 43%, 38%, 1) 100%
-  );
-
-  background: -webkit-linear-gradient(
-    90deg,
-    hsla(205, 46%, 10%, 1) 0%,
-    hsla(233, 29%, 23%, 1) 50%,
-    hsla(255, 43%, 38%, 1) 100%
+    31deg,
+    rgba(2, 0, 36, 1) 0%,
+    rgba(89, 37, 126, 1) 81%,
+    rgba(109, 44, 157, 1) 94%,
+    rgba(129, 48, 192, 1) 98%,
+    rgba(157, 78, 221, 1) 100%
   );
 
   background-attachment: fixed;
@@ -112,67 +81,76 @@ definePageMeta({
   label {
     color: var(--color-text);
   }
-  .form-container {
+  .login-form-wrapper {
     display: flex;
     flex-direction: column;
     height: 100%;
-    width: 40%;
+    width: 45%;
     padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
 
-    header {
-      display: flex;
-      align-items: start;
-      justify-content: center;
-      width: 100%;
-      .logo {
-        width: 100%;
-        font-size: 2rem;
-        color: var(--color-text);
-        font-weight: bold;
-      }
+    &.login-enter-active,
+    &.login-leave-active {
+      transition: width 0.2s ease-out, opacity 0.1s ease-out;
     }
 
-    .form {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
-      width: 100%;
-      height: 100%;
-      .welcome-title {
-        font-size: clamp(50px, 5vw, 100px);
-        color: var(--color-text);
-        font-weight: bold;
-        text-align: center;
-      }
-      form {
-        display: flex;
-        width: 100%;
-        align-items: center;
-        flex-direction: column;
-        button {
-          padding: 10px;
-          background-color: var(--color-primary);
-          color: white;
-          border: none;
-          border-radius: 5px;
-          cursor: pointer;
-          &:hover {
-            background-color: var(--color-primary-dark);
-          }
-        }
-      }
+    &.login-enter-from,
+    &.login-leave-to {
+      width: 0%;
+      opacity: 0;
+    }
+  }
+
+  .register-form-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 45%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    &.register-enter-active,
+    &.register-leave-active {
+      transition: width 0.2s ease-out, opacity 0.1s ease-out;
+    }
+
+    &.register-enter-from,
+    &.register-leave-to {
+      width: 0%;
+      opacity: 0;
+    }
+  }
+
+  .password-forgot-form-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 45%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    &.register-enter-active,
+    &.register-leave-active {
+      transition: width 0.2s ease-out, opacity 0.1s ease-out;
+    }
+
+    &.register-enter-from,
+    &.register-leave-to {
+      width: 0%;
+      opacity: 0;
     }
   }
   .image-container {
     width: 50%;
     height: 100%;
-    // background-image: url("../../assets/images/osint.png");
-    background-color: red;
+    background-image: url("../../assets/images/login.jpg");
+    // background-color: red;
     background-size: cover;
     background-position: center;
     border-radius: 10px;
@@ -183,6 +161,51 @@ definePageMeta({
     display: flex;
     justify-content: center;
     align-items: center;
+  }
+  header {
+    display: flex;
+    align-items: start;
+    justify-content: center;
+    width: 100%;
+    .logo {
+      width: 100%;
+      font-size: 2rem;
+      color: var(--color-text);
+      font-weight: bold;
+    }
+  }
+
+  .form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    width: 100%;
+    height: 100%;
+    .welcome-title {
+      font-size: clamp(50px, 5vw, 100px);
+      color: var(--color-text);
+      font-weight: bold;
+      text-align: center;
+    }
+    form {
+      display: flex;
+      width: 100%;
+      align-items: center;
+      flex-direction: column;
+      button {
+        padding: 10px;
+        background-color: var(--color-primary);
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        &:hover {
+          background-color: var(--color-primary-dark);
+        }
+      }
+    }
   }
 }
 </style>

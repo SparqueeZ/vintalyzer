@@ -1,5 +1,8 @@
 <template>
-  <div class="input-container" :class="{ disabled, invalid, privateInvalid }">
+  <div
+    class="input-container"
+    :class="{ disabled, invalid, privateInvalid, fullSize }"
+  >
     <label for="input" class="input-label">{{ label }}</label>
     <div
       class="input shadow-sm"
@@ -68,6 +71,7 @@ const props = defineProps({
   placeholder: String,
   type: String,
   liveValidation: Boolean,
+  fullSize: Boolean,
 });
 
 const emit = defineEmits(["update:modelValue"]);
@@ -152,6 +156,9 @@ watch(inputValue, (newValue) => {
   max-width: 350px;
   width: 100%;
   gap: 6px;
+  &.fullSize {
+    max-width: 100%;
+  }
   .input-label {
     font-size: 0.9rem;
     color: var(--color-text);

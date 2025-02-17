@@ -649,8 +649,70 @@ function detectLanguage(text: string): string | null {
 
 const analyze = () => {
   launchAnalysis(inputText.value);
-  // analyzeText();
+  //   analyzeText();
 };
+
+// Fonction pour sauvegarder le dressing
+// async function saveDressing() {
+//   const status = document.getElementById("status");
+//   status.textContent = "Sauvegarde du dressing en cours...";
+//   status.className = "";
+
+//   try {
+//     // Récupérer l'URL de l'onglet actif
+//     const [tab] = await chrome.tabs.query({
+//       active: true,
+//       currentWindow: true,
+//     });
+//     const url = new URL(tab.url);
+
+//     // Vérifier qu'on est sur une page Vinted
+//     if (!url.hostname.includes("vinted.fr")) {
+//       throw new Error("Veuillez ouvrir un dressing Vinted");
+//     }
+
+//     // Récupérer l'ID du vendeur
+//     const sellerId = url.pathname.split("/")[2];
+//     if (!sellerId) {
+//       throw new Error("ID vendeur non trouvé");
+//     }
+
+//     console.log("ID vendeur:", sellerId);
+
+//     // Injecter le script dans la page
+//     const response = await chrome.scripting.executeScript({
+//       target: { tabId: tab.id },
+//       func: async (sellerId) => {
+//         try {
+//           console.log("Début requête API...");
+//           const response = await fetch(
+//             "https://www.vinted.fr/api/v2/users/" + sellerId + "/items",
+//             {
+//               method: "GET",
+//               headers: {
+//                 Accept: "application/json",
+//                 "Content-Type": "application/json",
+//               },
+//             }
+//           );
+
+//           console.log("Réponse reçue:", response.status);
+//           const data = await response.json();
+//           console.log("Données reçues:", data);
+//           return data;
+//         } catch (error) {
+//           console.error("Erreur dans la requête:", error);
+//           throw error;
+//         }
+//       },
+//       args: [sellerId],
+//     });
+//   } catch (error) {
+//     console.error("Erreur:", error);
+//     status.textContent = error.message;
+//     status.className = "error";
+//   }
+// }
 
 async function analyzeText() {
   console.log("Début de l'analyse");

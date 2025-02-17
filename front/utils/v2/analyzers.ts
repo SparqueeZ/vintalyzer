@@ -19,10 +19,10 @@ function extractAll(pattern: RegExp, text: string): RegExpExecArray[] {
 function detectLanguage(text: string): string | null {
   for (const [lang, pattern] of Object.entries(languagePatterns)) {
     if (pattern.words.test(text.toLowerCase())) {
-      return pattern.country;
+      return pattern.lang ? pattern.lang : "unknown";
     }
   }
-  return null;
+  return "unknown";
 }
 
 const getBrand = (article: string) => {
@@ -34,12 +34,15 @@ const getBrand = (article: string) => {
     "mercedes",
     "ktm",
     "audi",
+    "honda",
   ];
   const brand = brandList.find((brand) =>
     article.toLowerCase().includes(brand)
   );
   return brand;
 };
+
+const brands = [];
 
 export const getScanDate = (date: string) => {
   const scanDate = new Date(date);
@@ -83,7 +86,7 @@ export const getSalesData = async (text: string) => {
     const uniqueSales = new Set();
     const salesData = <any>[];
 
-    const sellData = extractAll(patterns.realSales, text);
+    const sellData = extractAll(patterns.transactions, text);
     if (sellData) {
       sellData.forEach((match) => {
         const sale = {
@@ -121,15 +124,15 @@ export const getCommentsData = async (text: string) => {
     comments.forEach((comment) => {
       const commentContent = comment[3].replace(/\n/g, " ").trim();
       const country = detectLanguage(commentContent);
-      console.log("Country detected:", country);
       if (country) {
         salesByCountry.set(country, (salesByCountry.get(country) || 0) + 1);
       }
 
       commentsList.push({
-        auteur: comment[1],
+        author: comment[1],
         relativeDate: comment[2],
-        contenu: commentContent,
+        content: commentContent,
+        lang: country,
       });
     });
     return commentsList;
@@ -200,15 +203,74 @@ export const getExpensesData = async (text: string) => {
 };
 
 export const getStatisticsData = async (text: string) => {
-  try {
-    // const totalViews = Array.from(ventesByMarque.values()).reduce(
-    //   (sum, stats) => sum + stats.ventes.reduce((acc, v) => acc + v.vues, 0),
-    //   0
-    // );
-    // const totalSales = Array.from(uniqueSales).length;
-    // const conversionRate = totalViews > 0 ? (totalSales / totalViews) * 100 : 0;
-  } catch (error) {
-    console.error("Error extracting statistics data:", error);
-    return null;
+  text = text.replace("=== ARTICLES ===", "").trim();
+  let articles = extractAll(patterns.articles, text);
+  interface Sale {
+    item: string;
+    brand: string;
+    price: number;
+    views: number;
   }
+  interface BrandStats {
+    brand: string;
+    sales: Sale[];
+    totalPrice: number;
+    totalViews: number;
+    count: number;
+  }
+  const salesByBrand = <BrandStats[]>[];
+
+  articles.forEach((match) => {
+    const article = {
+      item: match[1].replace(/\n/g, " ").trim(),
+      brand: match[2] || "unknown",
+      price: parseFloat(match[3].replace(",", ".")),
+      views: parseInt(match[4]),
+    };
+
+    if (article.brand) {
+      const brandStats = salesByBrand.find((b) => b.brand === article.brand);
+      if (brandStats) {
+        brandStats.sales.push(article);
+        brandStats.totalPrice += article.price;
+        brandStats.totalViews += article.views;
+        brandStats.count++;
+      } else {
+        salesByBrand.push({
+          brand: article.brand,
+          sales: [article],
+          totalPrice: article.price,
+          totalViews: article.views,
+          count: 1,
+        });
+      }
+    } else {
+      salesByBrand.push({
+        brand: "unknown",
+        sales: [article],
+        totalPrice: article.price,
+        totalViews: article.views,
+        count: 1,
+      });
+    }
+  });
+
+  const totalViews = salesByBrand.reduce(
+    (sum, stats) => sum + stats.totalViews,
+    0
+  );
+  const totalSales = salesByBrand.reduce((sum, stats) => sum + stats.count, 0);
+  const totalSalesPrice = salesByBrand.reduce(
+    (sum, stats) => sum + stats.totalPrice,
+    0
+  );
+  const conversionRate = totalViews > 0 ? (totalSales / totalViews) * 100 : 0;
+
+  return {
+    salesByBrand,
+    conversionRate,
+    totalViews,
+    totalSales,
+    totalSalesPrice,
+  };
 };

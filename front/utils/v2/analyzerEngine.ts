@@ -3,6 +3,7 @@ import {
   getSalesData,
   getCommentsData,
   getExpensesData,
+  getStatisticsData,
 } from "./analyzers";
 
 export const launchAnalysis = async (text: string) => {
@@ -12,15 +13,19 @@ export const launchAnalysis = async (text: string) => {
   const shop = await getShopData(text);
 
   // Extraire les informations de vente
-  const sells = await getSalesData(text);
+  const sales = await getSalesData(text);
 
   // Extraire les informations des commentaires
   const comments = await getCommentsData(text);
 
   // Extraire les informations des dépenses
   const expenses = await getExpensesData(text);
+
+  // Extraire les statistiques de vente
+  const statistics = await getStatisticsData(text);
   console.log("Informations de la boutique:", shop);
-  console.log("Informations des ventes:", sells);
+  console.log("Informations des ventes:", sales);
   console.log("Informations des commentaires:", comments);
   console.log("Informations des dépenses :", expenses);
+  console.log("Statistiques de vente :", statistics);
 };

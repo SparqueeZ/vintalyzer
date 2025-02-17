@@ -18,6 +18,9 @@ export const useUserStore = defineStore("users", {
     users: [] as User[],
     loading: false,
     error: null as string | null,
+
+    loginPage: "login" as "login" | "register" | "forgotPassword",
+    loginPageEmail: "" as string,
   }),
   actions: {
     async register(
@@ -96,6 +99,12 @@ export const useUserStore = defineStore("users", {
       } finally {
         this.loading = false;
       }
+    },
+    changeLoginPage(page: "login" | "register" | "forgotPassword") {
+      this.loginPage = page;
+    },
+    updateLoginPageEmail(email: string) {
+      this.loginPageEmail = email;
     },
   },
 });

@@ -35,6 +35,7 @@ const props = defineProps({
   disabled: Boolean,
   small: Boolean,
   smallText: Boolean,
+  type: String,
 });
 
 const emit = defineEmits(["click"]);
@@ -46,7 +47,6 @@ const privateInvalid = ref(false);
 .button-container {
   display: flex;
   flex-direction: column;
-  padding: 10px;
   width: 100%;
   height: fit-content;
   gap: 6px;

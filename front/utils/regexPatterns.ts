@@ -34,6 +34,15 @@ export const patterns = {
 
   // Pour extraire les achats
   achats: /Achat\n([^\n]+)\n(-[0-9,]+)[ \u00A0]€\n(\d{1,2} [a-zÀ-ÿ]+ \d{4})/gm,
+
+  // New patterns
+  // Pour extraire les articles
+  articles:
+    /^(?!=== ARTICLES ===)([^,]+?)(?:, marque: ([^,]+?))?(?:, état:.*?, |, état:.*?taille:.*?, )(\d+,\d{2}) €.*?\nVendu\n(\d+) vues$/gm,
+
+  // Pour extraire les transactions
+  transactions:
+    /(?:Vente|Paiements[ \u00A0]de[ \u00A0]Vinted)\n([^\n]+)\n([0-9,]+)[ \u00A0]€\n(\d{1,2} [a-zÀ-ÿ]+ \d{4})/gm,
 };
 
 export const extractors = {

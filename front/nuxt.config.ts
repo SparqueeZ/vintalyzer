@@ -5,4 +5,14 @@ export default defineNuxtConfig({
 
   modules: ["@pinia/nuxt", "@nuxtjs/tailwindcss"],
   css: ["~/assets/styles.css"],
+  components: {
+    dirs: [
+      "~/components/Login",
+      "~/components",
+
+      {
+        extensions: ["vue"],
+      },
+    ],
+  },
 });
