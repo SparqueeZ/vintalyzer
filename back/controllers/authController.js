@@ -90,6 +90,12 @@ exports.login = async (req, res) => {
   }
 };
 
+exports.logout = async (req, res) => {
+  res.clearCookie("token");
+  console.log("[INFO] Utilisateur déconnecté.");
+  res.status(200).json({ message: "Utilisateur déconnecté." });
+};
+
 exports.getUserInformations = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id, {
@@ -214,8 +220,7 @@ exports.requestPasswordReset = async (req, res) => {
       userId: user.id,
       resetTokenId: token.id,
     });
-
-    const resetLink = `${process.env.FRONT_URL}/reset-password/${resetToken}`;
+    const resetLink = `${process.env.FRONT_URL}/app/connexion?token=${resetToken}`;
 
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,

@@ -8,6 +8,10 @@
       active,
       small: parentProps?.small,
       smallText: parentProps?.smallText,
+      clear: parentProps?.clear,
+      hoverPrimary: parentProps?.hoverPrimary,
+      fit: parentProps?.fit,
+      iconOnly: parentProps?.iconOnly,
     }"
     :type="parentProps?.type"
     @click="parentProps?.disabled ? null : $emit('click')"
@@ -42,10 +46,19 @@ const props = defineProps({
   transition: background-color 0.3s ease-out, border 0.3s ease-out,
     color 0.1s ease-out;
   user-select: none;
+  &.fit {
+    width: fit-content;
+  }
   &:hover {
-    border: 1px solid transparent;
-    background-color: var(--color-primary);
+    border: 1px solid var(--color-border);
+    background-color: var(--color-border);
     color: var(--color-btn-primary-text);
+  }
+  &.hoverPrimary {
+    &:hover {
+      background-color: var(--color-primary);
+      color: var(--color-btn-primary-text);
+    }
   }
   &.cta {
     background-color: var(--color-primary);
@@ -84,6 +97,21 @@ const props = defineProps({
   }
   &.smallText {
     font-size: 0.875rem;
+  }
+  &.clear {
+    background-color: transparent;
+    color: var(--color-text);
+    border: 1px solid transparent;
+    transition: transform 0.2s ease-out, translate 0.2s ease-out;
+    padding: 0;
+    &:hover {
+      background-color: var(--color-btn-clear-bg);
+      color: var(--color-btn-clear-text);
+      translate: 5px 1px;
+    }
+  }
+  &.iconOnly {
+    padding: 4px;
   }
 }
 </style>

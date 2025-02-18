@@ -1,7 +1,17 @@
 <template>
   <div
     class="button-container"
-    :class="{ disabled, invalid, privateInvalid, cta, small }"
+    :class="{
+      disabled,
+      invalid,
+      privateInvalid,
+      cta,
+      small,
+      loading,
+      fit,
+      smallIcon,
+      iconOnly,
+    }"
     @click="disabled ? null : $emit('click')"
   >
     <nuxt-link to="" v-if="link">
@@ -27,6 +37,7 @@ const props = defineProps({
   type: String,
   link: String,
   onClick: Function,
+  iconOnly: Boolean,
   icon: String,
   iconLeft: String,
   iconRight: String,
@@ -35,7 +46,11 @@ const props = defineProps({
   disabled: Boolean,
   small: Boolean,
   smallText: Boolean,
-  type: String,
+  smallIcon: Boolean,
+  clear: Boolean,
+  hoverPrimary: Boolean,
+  fit: Boolean,
+  loading: Boolean,
 });
 
 const emit = defineEmits(["click"]);
@@ -44,12 +59,24 @@ const privateInvalid = ref(false);
 </script>
 
 <style scoped lang="scss">
+@keyframes spinning {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 .button-container {
   display: flex;
   flex-direction: column;
   width: 100%;
   height: fit-content;
   gap: 6px;
+  &.fit {
+    width: fit-content;
+  }
 
   .icon-container {
     .icon {
@@ -59,9 +86,25 @@ const privateInvalid = ref(false);
       stroke: var(--color-text);
       fill: none;
     }
+    &.loading {
+      animation: spinning 1s linear infinite;
+    }
+  }
+  &.loading {
+    .icon-container {
+      animation: spinning 1s linear infinite;
+    }
   }
   &.small {
     padding: 4px;
+  }
+  &.smallIcon {
+    .icon-container {
+      .icon {
+        width: 18px;
+        height: 18px;
+      }
+    }
   }
 }
 </style>

@@ -64,10 +64,12 @@ sequelize
 const testRoutes = require("./routes/testRoutes");
 const authRoutes = require("./routes/authRoutes");
 const documentRoutes = require("./routes/documentRoutes");
+const salesRoutes = require("./routes/salesRoutes");
 
 app.use("/api", testRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/documents", documentRoutes);
+app.use("/api/sales", salesRoutes);
 
 app.get("/api/detect-emails", async (req, res) => {
   try {

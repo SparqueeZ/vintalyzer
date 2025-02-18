@@ -18,8 +18,9 @@ export const useUserStore = defineStore("users", {
     users: [] as User[],
     loading: false,
     error: null as string | null,
+    sessionError: null as string | null,
 
-    loginPage: "login" as "login" | "register" | "forgotPassword",
+    loginPage: "" as "login" | "register" | "forgotPassword" | "",
     loginPageEmail: "" as string,
   }),
   actions: {
@@ -79,7 +80,20 @@ export const useUserStore = defineStore("users", {
       }
     },
     async logout() {
+      this.loading = true;
+      this.error = null;
       this.user = {} as User;
+
+      try {
+        const response = await axios.get("/api/auth/logout");
+        this.user = {} as User;
+        return response;
+      } catch (error: any) {
+        this.error = error.message || "Une erreur s'est produite.";
+        throw error;
+      } finally {
+        this.loading = false;
+      }
     },
     async fetchUser() {
       this.loading = true;
@@ -90,12 +104,47 @@ export const useUserStore = defineStore("users", {
         return user.data;
       } catch (error: any) {
         if (error.response && error.response.status === 403) {
-          this.error = "Session expirée. Veuillez vous reconnecter.";
+          this.sessionError = "Session expirée. Veuillez vous reconnecter.";
         } else {
           this.error = error.message || "Une erreur s'est produite.";
         }
         this.user = {} as User;
         return null;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async requestPasswordReset(email: string) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await axios.post("/api/auth/password/reset", {
+          email,
+        });
+        return response;
+      } catch (error: any) {
+        this.error =
+          error?.response?.data?.message ||
+          "Une erreur s'est produite lors de l'envoi.";
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async resetPassword(token: string, password: string) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await axios.post("/api/auth/password/reset/confirm", {
+          token,
+          newPassword: password,
+        });
+        return response;
+      } catch (error: any) {
+        this.error =
+          error?.response?.data?.message ||
+          "Une erreur s'est produite lors de la réinitialisation.";
+        throw error;
       } finally {
         this.loading = false;
       }

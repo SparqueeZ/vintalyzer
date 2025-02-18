@@ -14,6 +14,6 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     router.push("/app");
   } else {
     console.log("Utilisateur non connecté");
-    router.push("/app/se-connecter");
+    router.push("/app/connexion");
   }
 });

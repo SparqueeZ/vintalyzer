@@ -76,6 +76,7 @@ import ChangeTheme from "~/components/Buttons/ChangeTheme.vue";
 import DefaultButton from "~/components/Form/Buttons/defaultButton.vue";
 const { currentTheme, toggleTheme } = useTheme();
 const userStore = useUserStore();
+const saleStore = useSaleStore();
 await userStore.fetchUser();
 
 const loading = ref(true);
@@ -180,7 +181,7 @@ const sidebarMenu = ref([
       {
         title: "Se déconnecter",
         icon: "logout",
-        to: "/app/se-connecter",
+        to: "/app/connexion",
         access: true,
         func: () => {
           userStore.logout();
@@ -207,6 +208,11 @@ const handleItemClick = (item) => {
     item.func();
   }
 };
+
+onMounted(async () => {
+  const sales = await saleStore.fetchSales();
+  console.log(sales);
+});
 </script>
 
 <style lang="scss" scoped>

@@ -6,6 +6,6 @@ export default defineNuxtRouteMiddleware(async () => {
 
   // S'assurer que fetchUser est appelé avant la vérification
   if (!userStore.user) {
-    return navigateTo("/app/se-connecter");
+    return navigateTo("/app/connexion");
   }
 });

@@ -1,5 +1,17 @@
 <template>
   <section class="create-account-form-container">
+    <div class="back-button">
+      <DefaultButton
+        type="submit"
+        text="Retour à la page de connexion"
+        cta
+        clear
+        :disabled="userStore.loading"
+        iconLeft="backArrow"
+        @click="userStore.changeLoginPage('login')"
+      />
+    </div>
+
     <div class="title-wrapper">
       <h1 class="title">Créer un compte</h1>
       <p class="subtitle">
@@ -89,6 +101,18 @@ const register = () => {
 </script>
 
 <style scoped lang="scss">
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  cursor: pointer;
+  z-index: 100;
+  .icon {
+    width: 30px;
+    height: 30px;
+    stroke: var(--color-text);
+  }
+}
 .text-link {
   cursor: pointer;
   color: var(--color-text-link);
@@ -105,6 +129,7 @@ const register = () => {
   display: flex;
   justify-content: center;
   flex-direction: column;
+  position: relative;
   gap: 10%;
   .title-wrapper {
     display: flex;

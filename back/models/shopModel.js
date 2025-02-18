@@ -11,56 +11,21 @@ const Shop = sequelize.define("Shop", {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  displayName: {
+  city: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  localisation: {
-    country: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    city: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
+  country: {
+    type: DataTypes.STRING,
+    allowNull: false,
   },
-  company: {
-    number: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    rcs: {
-      phone: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      city: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-    },
+  subscribers: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
   },
-  stats: {
-    subscribers: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    activeArticles: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    rating: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    sellsByCountry: {
-      type: DataTypes.JSON,
-      allowNull: false,
-    },
-    sells: {
-    
-    }
+  userId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
   },
 });
 
