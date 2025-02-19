@@ -7,8 +7,9 @@
 </template>
 
 <script setup>
-import { useUserStore } from "@/stores/UserStore";
-
 const userStore = useUserStore();
-await userStore.fetchUser();
+
+onMounted(async () => {
+  await userStore.fetchUser();
+});
 </script>

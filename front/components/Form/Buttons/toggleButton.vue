@@ -6,14 +6,20 @@
       invalid,
       privateInvalid,
       cta,
-      active: privateActive || active,
+      active: active,
+      small,
+      loading,
+      fit,
+      smallIcon,
+      iconOnly,
+      reverseColor,
     }"
     @click="disabled ? null : changeActiveState()"
   >
     <nuxt-link to="" v-if="link">
       <button>{{ text }}</button>
     </nuxt-link>
-    <customButton v-else :parentProps="props" :active="privateActive">
+    <customButton v-else :parentProps="props" :active="active">
       <div v-if="iconLeft" class="icon-container">
         <Icon :name="iconLeft" />
       </div>
@@ -33,6 +39,7 @@ const props = defineProps({
   type: String,
   link: String,
   onClick: Function,
+  iconOnly: Boolean,
   icon: String,
   iconLeft: String,
   iconRight: String,
@@ -40,11 +47,21 @@ const props = defineProps({
   invalid: Boolean,
   disabled: Boolean,
   active: Boolean,
+  small: Boolean,
+  smallText: Boolean,
+  smallIcon: Boolean,
+  clear: Boolean,
+  hoverPrimary: Boolean,
+  fit: Boolean,
+  loading: Boolean,
+  reverseColor: Boolean,
 });
+const emit = defineEmits(["active", "inactive", "click"]);
 
 const privateActive = ref(props.active || false);
 
 const changeActiveState = () => {
+  emit("click");
   privateActive.value = !privateActive.value;
   if (privateActive.value) {
     emit("active");
@@ -52,8 +69,6 @@ const changeActiveState = () => {
     emit("inactive");
   }
 };
-
-const emit = defineEmits(["active", "inactive", "click"]);
 
 const privateInvalid = ref(false);
 </script>
@@ -66,6 +81,9 @@ const privateInvalid = ref(false);
   width: 100%;
   height: fit-content;
   gap: 6px;
+  &.fit {
+    width: fit-content;
+  }
 
   .icon-container {
     .icon {
@@ -74,6 +92,25 @@ const privateInvalid = ref(false);
       height: 20px;
       stroke: var(--color-text);
       fill: none;
+    }
+    &.loading {
+      animation: spinning 1s linear infinite;
+    }
+  }
+  &.loading {
+    .icon-container {
+      animation: spinning 1s linear infinite;
+    }
+  }
+  &.small {
+    padding: 0;
+  }
+  &.smallIcon {
+    .icon-container {
+      .icon {
+        width: 18px;
+        height: 18px;
+      }
     }
   }
 }

@@ -5,6 +5,7 @@ const { sequelize } = require("./configs/db.js");
 const Role = require("./models/roleModel");
 const UserRole = require("./models/userRoleModel");
 const User = require("./models/userModel");
+const cors = require("cors");
 
 const emailDetectionController = require("./controllers/emailDetectionController.js");
 
@@ -12,6 +13,13 @@ dotenv.config();
 
 const app = express();
 const PORT = 3001;
+
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 
 app.use(cookieParser());
 app.use(express.json());

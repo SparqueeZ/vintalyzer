@@ -12,6 +12,7 @@
       hoverPrimary: parentProps?.hoverPrimary,
       fit: parentProps?.fit,
       iconOnly: parentProps?.iconOnly,
+      reverseColor: parentProps?.reverseColor,
     }"
     :type="parentProps?.type"
     @click="parentProps?.disabled ? null : $emit('click')"
@@ -52,7 +53,6 @@ const props = defineProps({
   &:hover {
     border: 1px solid var(--color-border);
     background-color: var(--color-border);
-    color: var(--color-btn-primary-text);
   }
   &.hoverPrimary {
     &:hover {
@@ -88,8 +88,18 @@ const props = defineProps({
     }
   }
   &.active {
-    background-color: var(--color-primary);
-    color: var(--color-btn-primary-text);
+    background-color: var(--color-border);
+    &.reverseColor {
+      background-color: var(--color-bg);
+    }
+  }
+  &.reverseColor {
+    background-color: transparent;
+    border-color: transparent;
+
+    &:hover {
+      background-color: var(--color-bg);
+    }
   }
   &.small {
     padding: 5px 10px;

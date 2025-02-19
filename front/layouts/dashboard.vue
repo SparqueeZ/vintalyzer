@@ -17,10 +17,10 @@
           </Sidebar>
           <SidebarInset>
             <div
-              class="flex flex-col w-full h-full hello"
+              class="flex flex-col w-full page-content-wrapper"
               @contextmenu="handleContextMenu"
             >
-              <header class="bg-white shadow-sm">
+              <!-- <header class="bg-white shadow-sm">
                 <nav
                   class="container mx-auto p-4 flex justify-between items-center"
                 >
@@ -34,23 +34,17 @@
                           smallText
                         />
                       </NuxtLink>
-                      <!-- <CustomButton small>
-                        <p>Retourner à l'acceuil</p>
-                      </CustomButton> -->
                     </li>
                     <li>
                       <ChangeTheme bordered />
                     </li>
                   </ul>
                 </nav>
-              </header>
+              </header> -->
 
-              <div class="py-4 h-full w-full">
+              <div class="py-4 w-full page-content">
                 <slot />
               </div>
-              <footer class="mw-auto py-4 border-t">
-                <p>Footer</p>
-              </footer>
               <ContextMenu
                 :menu="profileMenu"
                 :x="contextMenuX"
@@ -242,19 +236,21 @@ ul {
 
 main {
   display: flex;
-  height: 100vh;
 }
 .router-link-exact-active {
   font-weight: bold;
 }
-.hello {
+.page-content-wrapper {
   background-color: var(--color-bg);
-  height: 120svh;
+  min-height: 100svh;
   color: var(--color-text);
   header {
     background-color: var(--color-bg);
     border-bottom: 2px solid var(--color-border);
     color: var(--color-text);
+  }
+  .page-content {
+    min-height: 100%;
   }
 }
 </style>

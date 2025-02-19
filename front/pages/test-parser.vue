@@ -648,8 +648,8 @@ function detectLanguage(text: string): string | null {
 }
 
 const analyze = () => {
-  launchAnalysis(inputText.value);
-  //   analyzeText();
+  // launchAnalysis(inputText.value);
+  analyzeText();
 };
 
 // Fonction pour sauvegarder le dressing
