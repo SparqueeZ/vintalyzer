@@ -9,11 +9,11 @@ const Invoice = sequelize.define(
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    saleId: {
+    orderId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
-        model: "Sales",
+        model: "Orders",
         key: "id",
       },
     },

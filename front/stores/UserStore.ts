@@ -109,7 +109,7 @@ export const useUserStore = defineStore("users", {
           this.error = error.message || "Une erreur s'est produite.";
         }
         this.user = {} as User;
-        return null;
+        throw error;
       } finally {
         this.loading = false;
       }

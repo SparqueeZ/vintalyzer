@@ -1,5 +1,5 @@
 <template>
-  <div class="orders-display" v-if="saleStore.sales.length > 0">
+  <div class="orders-display" v-if="orderStore.orders.length > 0">
     <ToggleButton
       small
       smallText
@@ -40,31 +40,31 @@
       </tr>
     </thead>
     <tbody>
-      <tr v-for="sale in saleStore.sales" :key="sale.id">
-        <td>{{ formatDate(sale.saleDate) }}</td>
-        <td>{{ sale.orderNumber }}</td>
-        <td>{{ sale.itemName }}</td>
-        <td>{{ sale.paymentMethod }}</td>
-        <td>{{ formatPrice(sale.saleAmount) }}</td>
-        <td>{{ formatPrice(sale.expenses) }}</td>
-        <td>{{ formatPrice(sale.totalAmount) }}</td>
+      <tr v-for="order in orderStore.orders" :key="order.id">
+        <td>{{ formatDate(order.orderDate) }}</td>
+        <td>{{ order.orderNumber }}</td>
+        <td>{{ order.itemName }}</td>
+        <td>{{ order.paymentMethod }}</td>
+        <td>{{ formatPrice(order.orderAmount) }}</td>
+        <td>{{ formatPrice(order.expenses) }}</td>
+        <td>{{ formatPrice(order.totalAmount) }}</td>
         <td>
           <a
-            :href="`http://localhost:3001/api/documents/sale/${sale.id}/shippingLabel`"
+            :href="`http://localhost:3001/api/documents/order/${order.id}/shippingLabel`"
           >
             <DefaultButton text="Télécharger" iconLeft="download01" fit />
           </a>
         </td>
         <td>
           <a
-            :href="`http://localhost:3001/api/documents/sale/${sale.id}/returnForm`"
+            :href="`http://localhost:3001/api/documents/order/${order.id}/returnForm`"
           >
             <DefaultButton text="Télécharger" iconLeft="download01" fit />
           </a>
         </td>
         <td>
           <a
-            :href="`http://localhost:3001/api/documents/sale/${sale.id}/invoice`"
+            :href="`http://localhost:3001/api/documents/order/${order.id}/invoice`"
           >
             <DefaultButton text="Télécharger" iconLeft="download01" fit />
           </a>
@@ -81,7 +81,7 @@ import DefaultButton from "~/components/Form/Buttons/defaultButton.vue";
 import ToggleButton from "../Form/Buttons/toggleButton.vue";
 import OrdersOverview from "~/components/Orders/overview.vue";
 
-const saleStore = useSaleStore();
+const orderStore = useOrderStore();
 
 const toggleButtonListActive = ref(true);
 const toggleButtonCardActive = ref(false);

@@ -3,8 +3,6 @@ const dotenv = require("dotenv");
 const cookieParser = require("cookie-parser");
 const { sequelize } = require("./configs/db.js");
 const Role = require("./models/roleModel");
-const UserRole = require("./models/userRoleModel");
-const User = require("./models/userModel");
 const cors = require("cors");
 
 const emailDetectionController = require("./controllers/emailDetectionController.js");
@@ -72,11 +70,13 @@ sequelize
 const testRoutes = require("./routes/testRoutes");
 const authRoutes = require("./routes/authRoutes");
 const documentRoutes = require("./routes/documentRoutes");
-const salesRoutes = require("./routes/salesRoutes");
+const ordersRoutes = require("./routes/ordersRoutes.js");
+const salesRoutes = require("./routes/salesRoutes.js");
 
 app.use("/api", testRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/documents", documentRoutes);
+app.use("/api/orders", ordersRoutes);
 app.use("/api/sales", salesRoutes);
 
 app.get("/api/detect-emails", async (req, res) => {

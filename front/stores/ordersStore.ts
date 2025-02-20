@@ -1,21 +1,21 @@
 import { acceptHMRUpdate, defineStore } from "pinia";
 import axios from "../assets/js/axios";
 
-export const useSaleStore = defineStore("sales", {
+export const useOrderStore = defineStore("orders", {
   state: () => ({
-    sales: [],
+    orders: [],
     loading: false,
     error: null as string | null,
   }),
   actions: {
-    async fetchSales() {
+    async fetchOrders() {
       this.loading = true;
       this.error = null;
       setTimeout(async () => {
         try {
-          const response = await axios.get("/api/sales");
-          this.sales = response.data;
-          return this.sales;
+          const response = await axios.get("/api/orders");
+          this.orders = response.data;
+          return this.orders;
         } catch (error: any) {
           this.error = error.message || "Une erreur s'est produite.";
           throw error;
@@ -28,5 +28,5 @@ export const useSaleStore = defineStore("sales", {
 });
 
 if (import.meta.hot) {
-  import.meta.hot.accept(acceptHMRUpdate(useSaleStore, import.meta.hot));
+  import.meta.hot.accept(acceptHMRUpdate(useOrderStore, import.meta.hot));
 }

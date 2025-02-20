@@ -1,7 +1,7 @@
 <template>
   <transition name="fade" mode="out-in">
-    <div v-if="loading" key="loading">
-      <main>loading...</main>
+    <div v-if="loading" key="loading" class="loading-container">
+      <Spinner />
     </div>
     <div v-else key="content">
       <main>
@@ -68,16 +68,31 @@ import ProfileCard from "~/components/ProfileCard/ProfileCard.vue";
 import ContextMenu from "~/components/ContextMenu.vue";
 import ChangeTheme from "~/components/Buttons/ChangeTheme.vue";
 import DefaultButton from "~/components/Form/Buttons/defaultButton.vue";
+import Spinner from "~/components/Spinner.vue";
 const { currentTheme, toggleTheme } = useTheme();
 const userStore = useUserStore();
-const saleStore = useSaleStore();
-await userStore.fetchUser();
+const orderStore = useOrderStore();
+// await userStore.fetchUser();
+const router = useRouter();
 
 const loading = ref(true);
 
-setTimeout(() => {
-  loading.value = false;
-}, 1000);
+const loadUser = async () => {
+  loading.value = true;
+  try {
+    const response = await userStore.fetchUser();
+    console.log(response);
+    if (!response) {
+      router.push("/app/connexion");
+    }
+  } catch (error) {
+    router.push("/app/connexion");
+  } finally {
+    setTimeout(() => {
+      loading.value = false;
+    }, 1000);
+  }
+};
 
 const profileMenu = ref([
   {
@@ -155,6 +170,12 @@ const sidebarMenu = ref([
         to: "/app/mon-abonnement",
         access: true,
       },
+      {
+        title: "Parser",
+        icon: "settings",
+        to: "/app/test-parser",
+        access: true,
+      },
     ],
   },
   {
@@ -203,9 +224,12 @@ const handleItemClick = (item) => {
   }
 };
 
+const saleStore = useSaleStore();
+
 onMounted(async () => {
-  const sales = await saleStore.fetchSales();
-  console.log(sales);
+  await loadUser();
+  await saleStore.fetchUserData();
+  const orders = await orderStore.fetchOrders();
 });
 </script>
 
@@ -252,5 +276,11 @@ main {
   .page-content {
     min-height: 100%;
   }
+}
+
+.loading-container {
+  background-color: var(--color-bg);
+  min-height: 100vh;
+  width: 100%;
 }
 </style>

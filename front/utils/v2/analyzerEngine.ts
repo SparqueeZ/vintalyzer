@@ -23,9 +23,16 @@ export const launchAnalysis = async (text: string) => {
 
   // Extraire les statistiques de vente
   const statistics = await getStatisticsData(text);
-  console.log("Informations de la boutique:", shop);
-  console.log("Informations des ventes:", sales);
-  console.log("Informations des commentaires:", comments);
-  console.log("Informations des dépenses :", expenses);
-  console.log("Statistiques de vente :", statistics);
+  // console.log("Informations de la boutique:", shop);
+  // console.log("Informations des ventes:", sales);
+  // console.log("Informations des commentaires:", comments);
+  // console.log("Informations des dépenses :", expenses);
+  // console.log("Statistiques de vente :", statistics);
+  return {
+    shop,
+    sales,
+    comments,
+    expenses,
+    statistics,
+  };
 };

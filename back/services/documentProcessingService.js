@@ -8,7 +8,7 @@ class DocumentProcessingService {
 
     this.User = models.User;
     this.Customer = models.Customer;
-    this.Sales = models.Sale;
+    this.Orsers = models.Order;
     this.ReturnForm = models.ReturnForm;
     this.ShippingLabel = models.ShippingLabel;
 
@@ -16,7 +16,7 @@ class DocumentProcessingService {
     if (
       !this.User ||
       !this.Customer ||
-      !this.Sales ||
+      !this.Orsers ||
       !this.ReturnForm ||
       !this.ShippingLabel
     ) {
@@ -24,12 +24,12 @@ class DocumentProcessingService {
     }
   }
 
-  async checkSaleExists(orderNumber) {
+  async checkOrderExists(orderNumber) {
     try {
-      const existingSale = await this.Sales.findOne({
+      const existingOrder = await this.Orsers.findOne({
         where: { orderNumber: orderNumber },
       });
-      return existingSale !== null;
+      return existingOrder !== null;
     } catch (error) {
       console.error("Erreur lors de la vérification de la vente:", error);
       return false;
@@ -41,8 +41,8 @@ class DocumentProcessingService {
       console.log("Traitement de la commande:", orderData.orderNumber);
 
       // Vérifier si la vente existe déjà
-      const saleExists = await this.checkSaleExists(orderData.orderNumber);
-      if (saleExists) {
+      const orderExists = await this.checkOrderExists(orderData.orderNumber);
+      if (orderExists) {
         console.log(`La vente ${orderData.orderNumber} existe déjà, ignorée.`);
         return null;
       }
@@ -74,8 +74,8 @@ class DocumentProcessingService {
       let shippingLabelId = null;
 
       // Traiter le formulaire de retour
-      if (orderData.saleAttachments?.length) {
-        const attachment = orderData.saleAttachments[0];
+      if (orderData.orderAttachments?.length) {
+        const attachment = orderData.orderAttachments[0];
         const filePath = await this.saveFile(
           attachment,
           orderData.orderNumber,
@@ -87,9 +87,9 @@ class DocumentProcessingService {
           filePath: filePath,
           mimeType: attachment.contentType || "application/pdf",
           fileSize: attachment.size,
-          mailId: orderData.saleEmail.messageId,
-          mailDate: new Date(orderData.saleEmail.date),
-          senderEmail: orderData.saleEmail.from.text,
+          mailId: orderData.orderEmail.messageId,
+          mailDate: new Date(orderData.orderEmail.date),
+          senderEmail: orderData.orderEmail.from.text,
           orderNumber: orderData.orderNumber,
           issueDate: new Date(orderData.returnFormInfo.paymentDate),
         });
@@ -122,24 +122,24 @@ class DocumentProcessingService {
       }
 
       // Créer la vente avec les références aux documents
-      const sale = await this.Sales.create({
+      const order = await this.Orsers.create({
         userId: user.id,
         customerId: customer.id,
         returnFormId,
         shippingLabelId,
-        saleDate: new Date(orderData.returnFormInfo.paymentDate),
-        saleAmount: orderData.returnFormInfo.orderDetails.itemPrice,
+        orderDate: new Date(orderData.returnFormInfo.paymentDate),
+        orderAmount: orderData.returnFormInfo.orderDetails.itemPrice,
         expenses:
           orderData.returnFormInfo.orderDetails.shippingCost +
           orderData.returnFormInfo.orderDetails.buyerProtection,
         paymentMethod: "VINTED",
-        mailSource: orderData.saleEmail.messageId,
+        mailSource: orderData.orderEmail.messageId,
         orderNumber: orderData.orderNumber,
         itemName: orderData.returnFormInfo.orderDetails.itemName,
         totalAmount: orderData.returnFormInfo.orderDetails.total,
       });
 
-      return sale;
+      return order;
     } catch (error) {
       console.error("Erreur détaillée dans processOrderDocuments:", error);
       throw error;

@@ -205,7 +205,7 @@ async function extractReturnFormInfo(attachment) {
 
 const documentProcessingService = require("../services/documentProcessingService");
 
-function printSaleDetails(orderNumber, orderData) {
+function printOrderDetails(orderNumber, orderData) {
   console.error("\n=== DÉTAILS DE LA VENTE EN ERREUR ===");
   console.error(`Numéro de commande: ${orderNumber}`);
 
@@ -291,8 +291,8 @@ async function testEmailConnection() {
               if (orderNumber) {
                 let order = orders.get(orderNumber) || {};
                 order.orderNumber = orderNumber;
-                order.saleEmail = fullEmail;
-                order.saleAttachments = attachments;
+                order.orderEmail = fullEmail;
+                order.orderAttachments = attachments;
                 orders.set(orderNumber, order);
 
                 await savePdfAttachment(att, orderNumber);
@@ -334,39 +334,39 @@ async function testEmailConnection() {
 
     // Traitement final et statistiques
     for (const [orderNumber, orderData] of orders.entries()) {
-      if (orderData.saleEmail && orderData.returnFormInfo) {
+      if (orderData.orderEmail && orderData.returnFormInfo) {
         try {
-          const forwardedFrom = orderData.saleEmail.from.text;
+          const forwardedFrom = orderData.orderEmail.from.text;
 
           if (!orderData.orderInfo) {
             printError(
               `Commande ${orderNumber}: Informations d'acheteur manquantes`
             );
-            printSaleDetails(orderNumber, orderData);
+            printOrderDetails(orderNumber, orderData);
             errorCount++;
             continue;
           }
 
-          const sale = await documentProcessingService.processOrderDocuments(
+          const order = await documentProcessingService.processOrderDocuments(
             orderData,
             forwardedFrom
           );
 
-          if (sale === null) {
+          if (order === null) {
             skippedCount++;
 
-            printSaleDetails(orderNumber, orderData);
+            printOrderDetails(orderNumber, orderData);
             continue;
           }
 
           processedCount++;
 
           printSuccess(
-            `Commande ${orderNumber}: traitée avec succès (ID: ${sale.id})`
+            `Commande ${orderNumber}: traitée avec succès (ID: ${order.id})`
           );
         } catch (error) {
           printError(`Commande ${orderNumber}: Erreur - ${error.message}`);
-          printSaleDetails(orderNumber, orderData);
+          printOrderDetails(orderNumber, orderData);
           errorCount++;
         }
       }

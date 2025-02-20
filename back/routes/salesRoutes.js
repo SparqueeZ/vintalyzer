@@ -10,4 +10,9 @@ router.get("/all", authenticateToken, salesController.getAllSales);
 // Route pour obtenir les ventes de l'utilisateur connecté
 router.get("/", authenticateToken, salesController.getUserSales);
 
+router.post("/load", authenticateToken, salesController.loadSales);
+
+// Route pour récupérer toutes les données de l'utilisateur
+router.get("/data", authenticateToken, salesController.getUserData);
+
 module.exports = router;

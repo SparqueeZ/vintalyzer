@@ -1,7 +1,7 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../configs/db");
 
-const Sale = sequelize.define("Sale", {
+const Order = sequelize.define("Order", {
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
@@ -41,8 +41,8 @@ const Sale = sequelize.define("Sale", {
       key: "id",
     },
   },
-  saleDate: DataTypes.DATE,
-  saleAmount: DataTypes.DECIMAL(10, 2),
+  orderDate: DataTypes.DATE,
+  orderAmount: DataTypes.DECIMAL(10, 2),
   expenses: DataTypes.DECIMAL(10, 2),
   paymentMethod: DataTypes.STRING,
   mailSource: DataTypes.STRING,
@@ -55,15 +55,15 @@ const Sale = sequelize.define("Sale", {
 });
 
 // Modification des associations
-Sale.associate = (models) => {
-  Sale.belongsTo(models.ReturnForm, {
+Order.associate = (models) => {
+  Order.belongsTo(models.ReturnForm, {
     foreignKey: "returnFormId",
     as: "ReturnForm", // Majuscule au début
   });
-  Sale.belongsTo(models.ShippingLabel, {
+  Order.belongsTo(models.ShippingLabel, {
     foreignKey: "shippingLabelId",
     as: "ShippingLabel", // Majuscule au début
   });
 };
 
-module.exports = Sale;
+module.exports = Order;

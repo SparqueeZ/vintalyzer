@@ -42,7 +42,6 @@ import ForgotPasswordForm from "~/components/Login/ForgotPasswordForm.vue";
 const userStore = useUserStore();
 const router = useRouter();
 const route = useRoute();
-console.log(route.query.token);
 
 onMounted(() => {
   userStore.loginPage = "login";

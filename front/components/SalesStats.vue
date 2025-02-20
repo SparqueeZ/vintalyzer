@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="store.hasVentes"
+    v-if="saleStore.sales"
     class="bg-[#1a1b23] rounded-lg p-4 shadow-lg w-56 min-w-[14rem] max-w-[14rem] transform transition-all duration-300 hover:shadow-xl"
   >
     <div class="flex flex-col h-full space-y-3">
@@ -29,7 +29,7 @@
 
       <div class="flex items-baseline">
         <div class="text-3xl font-bold text-violet-400">
-          {{ store.getVentes.length }}
+          {{ saleStore.sales.length }}
         </div>
         <div class="text-xs text-white/50 ml-2">ventes</div>
       </div>
@@ -42,9 +42,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { useDataStore } from "~/stores/dataStore";
-
-const store = useDataStore();
+const saleStore = useSaleStore();
 
 function formatDate(date: Date) {
   return date.toLocaleDateString("fr-FR", {
@@ -54,7 +52,8 @@ function formatDate(date: Date) {
 }
 
 const dateRange = computed(() => {
-  const ventes = store.getVentes;
+  const ventes = saleStore.sales;
+  console.log(ventes);
   if (!ventes.length) return "";
 
   const firstDate = new Date(ventes[0].date);

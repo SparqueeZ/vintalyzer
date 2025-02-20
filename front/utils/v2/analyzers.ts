@@ -49,32 +49,66 @@ export const getScanDate = (date: string) => {
   return scanDate;
 };
 
+const extractProfileJson = (text: string): any | null => {
+  try {
+    const jsonMatch = text.match(/=== PROFIL JSON ===\n([\s\S]*?)\n===/);
+    if (jsonMatch && jsonMatch[1]) {
+      const profileData = JSON.parse(jsonMatch[1]);
+      // Extraire uniquement le nombre d'évaluations
+      if (profileData.evaluations) {
+        profileData.evaluations = profileData.evaluations.match(/(\d+)/)[1];
+      }
+      return profileData;
+    }
+    return null;
+  } catch (error) {
+    console.error("Error parsing JSON profile:", error);
+    return null;
+  }
+};
+
 export const getShopData = async (text: string) => {
   try {
+    // Try to extract from JSON first
+    const profileJson = extractProfileJson(text);
+
+    if (profileJson) {
+      const shopLocation = {
+        city: extract(patterns.localisation, text, 1)?.trim(),
+        country: extract(patterns.localisation, text, 2)?.trim(),
+      };
+
+      return {
+        name: profileJson.nom,
+        email: profileJson.email,
+        subscribers: profileJson.abonnes,
+        evaluations: profileJson.evaluations,
+        location: shopLocation,
+      };
+    }
+
+    // Fallback to old method if JSON is not present
     const shopName = extract(patterns.boutiqueName, text, 1);
-    if (!shopName) {
-      throw new Error("Boutique name not found");
-    }
-
     const shopSubscribers = extract(patterns.abonnes, text, 1);
-    if (!shopSubscribers) {
-      throw new Error("Shop subscribers not found");
-    }
-
     const shopLocation = {
       ville: extract(patterns.localisation, text, 1)?.trim(),
       pays: extract(patterns.localisation, text, 2)?.trim(),
     };
-    if (!shopLocation.ville || !shopLocation.pays) {
-      throw new Error("Shop location not found");
+
+    if (
+      !shopName ||
+      !shopSubscribers ||
+      !shopLocation.ville ||
+      !shopLocation.pays
+    ) {
+      throw new Error("Required shop data not found");
     }
 
-    const shopData = {
+    return {
       name: shopName,
       subscribers: shopSubscribers,
       location: shopLocation,
     };
-    return shopData;
   } catch (error) {
     console.error("Error extracting shop data:", error);
     return null;

@@ -1,9 +1,9 @@
 <template>
   <section class="orders-wrapper">
-    <OrdersOverview v-if="saleStore.sales.length > 0" />
+    <OrdersOverview v-if="orderStore.orders.length > 0" />
 
     <div class="orders">
-      <OrdersList v-if="saleStore.sales.length > 0" />
+      <OrdersList v-if="orderStore.orders.length > 0" />
 
       <div v-else class="orders-none">
         <p class="text">
@@ -15,9 +15,9 @@
             text="Rafraichir"
             iconLeft="refresh01"
             fit
-            :loading="saleStore.loading"
-            :disabled="saleStore.loading"
-            @click="saleStore.fetchSales()"
+            :loading="orderStore.loading"
+            :disabled="orderStore.loading"
+            @click="orderStore.fetchOrders()"
           />
         </div>
         <p class="help-text">
@@ -36,7 +36,7 @@ import DefaultButton from "~/components/Form/Buttons/defaultButton.vue";
 import OrdersOverview from "~/components/Orders/overview.vue";
 import OrdersList from "~/components/Orders/orderList.vue";
 
-const saleStore = useSaleStore();
+const orderStore = useOrderStore();
 
 definePageMeta({
   layout: "dashboard",
@@ -45,21 +45,21 @@ definePageMeta({
 
 type DocumentType = "shippingLabel" | "returnForm" | "invoice";
 
-const downloadDocument = async (saleId: string, type: string) => {
+const downloadDocument = async (orderId: string, type: string) => {
   try {
-    // @click="downloadDocument(sale.id, 'shippingLabel')"
+    // @click="downloadDocument(order.id, 'shippingLabel')"
     //
-    // const response = await fetch(`/api/documents/sale/${saleId}/${type}`);
+    // const response = await fetch(`/api/documents/order/${orderId}/${type}`);
     // const blob = await response.blob();
     // const url = window.URL.createObjectURL(blob);
     // const a = document.createElement("a");
     // a.href = url;
-    // a.download = `${type}-${saleId}.pdf`;
+    // a.download = `${type}-${orderId}.pdf`;
     // document.body.appendChild(a);
     // a.click();
     // window.URL.revokeObjectURL(url);
     // a.remove();
-    // router.push(`http://localhost:3001/api/documents/sale/${saleId}/${type}`);
+    // router.push(`http://localhost:3001/api/documents/order/${orderId}/${type}`);
   } catch (error) {
     console.error("Erreur lors du téléchargement:", error);
   }

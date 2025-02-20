@@ -9,8 +9,9 @@
       <div class="flex flex-wrap gap-4 mt-6">
         <ShopStats />
         <SalesStats />
-        <TotalStats />
         <ExpenseStats />
+        <!-- <SalesChart /> -->
+        <TotalStats />
       </div>
     </div>
   </section>

@@ -1,6 +1,5 @@
 <template>
   <div
-    v-if="hasVentes"
     class="bg-[#1a1b23] rounded-lg p-4 shadow-lg transform transition-all duration-300 hover:shadow-xl"
     :style="{ width: 'calc(48rem + 2rem)' }"
   >
@@ -69,7 +68,6 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, nextTick } from "vue";
-import { useDataStore } from "~/stores/dataStore";
 import {
   Chart,
   CategoryScale,
@@ -93,17 +91,12 @@ Chart.register(
   Legend,
   Filler
 );
-
-const store = useDataStore();
+const saleStore = useSaleStore();
 const chart = ref(null);
 let chartInstance = null;
 
 const startDate = ref("");
 const endDate = ref("");
-
-const hasVentes = computed(() => {
-  return store.analyzedData?.ventes?.length > 0;
-});
 
 function formatDate(date: Date) {
   return date.toLocaleDateString("fr-FR", {
@@ -123,8 +116,8 @@ function formatMoney(amount: number) {
 }
 
 const filteredVentes = computed(() => {
-  if (!store.analyzedData?.ventes) return [];
-  return store.analyzedData.ventes
+  if (!saleStore.sales) return [];
+  return saleStore.sales
     .filter((vente) => {
       const date = new Date(vente.date);
       return (
@@ -136,8 +129,8 @@ const filteredVentes = computed(() => {
 });
 
 const filteredDepenses = computed(() => {
-  if (!store.analyzedData?.depenses) return [];
-  return store.analyzedData.depenses
+  if (!saleStore.expenses) return [];
+  return saleStore.expenses
     .filter((depense) => {
       const date = new Date(depense.date);
       return (
@@ -152,7 +145,7 @@ const totalSales = computed(() => filteredVentes.value.length);
 
 const totalRevenue = computed(() => {
   return filteredVentes.value.reduce(
-    (sum, vente) => sum + (vente.prix || 0),
+    (sum, vente) => sum + (vente.price || 0),
     0
   );
 });
@@ -301,19 +294,17 @@ function updateChart() {
 }
 
 watch(
-  [() => store.analyzedData, startDate, endDate],
+  [() => saleStore, startDate, endDate],
   () => {
-    if (hasVentes.value) {
-      nextTick(updateChart);
-    }
+    nextTick(updateChart);
   },
   { deep: true }
 );
 
 onMounted(() => {
-  if (store.analyzedData?.ventes?.length > 0) {
+  if (saleStore.sales?.length > 0) {
     // Initialiser avec le dernier mois
-    const ventes = [...store.analyzedData.ventes].sort(
+    const ventes = [...saleStore.sales].sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
     const latestDate = new Date(ventes[0].date);
@@ -324,8 +315,6 @@ onMounted(() => {
     endDate.value = latestDate.toISOString().split("T")[0];
   }
 
-  if (hasVentes.value) {
-    nextTick(updateChart);
-  }
+  nextTick(updateChart);
 });
 </script>

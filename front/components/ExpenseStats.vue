@@ -55,13 +55,11 @@
 
 <script setup lang="ts">
 import { computed, watch } from "vue";
-import { useDataStore } from "~/stores/dataStore";
 
-const store = useDataStore();
-
+const saleStore = useSaleStore();
 // Debug
 watch(
-  () => store.analyzedData,
+  () => saleStore.shop.name,
   (newData) => {
     console.log("ExpenseStats - analyzedData:", newData);
     if (newData?.depenses) {
@@ -89,11 +87,11 @@ function formatMoney(amount: number) {
 }
 
 const hasDepenses = computed(() => {
-  return store.analyzedData?.depenses?.length > 0;
+  return saleStore.expenses?.length > 0;
 });
 
 const dateRange = computed(() => {
-  const depenses = store.analyzedData?.depenses || [];
+  const depenses = saleStore.expenses || [];
   if (!depenses.length) return "";
 
   const firstDate = new Date(depenses[0].date);
@@ -103,7 +101,7 @@ const dateRange = computed(() => {
 });
 
 const totalExpenses = computed(() => {
-  const depenses = store.analyzedData?.depenses || [];
+  const depenses = saleStore.expenses || [];
   const total = depenses.reduce(
     (sum, depense) => sum + (parseFloat(depense.montant) || 0),
     0
@@ -112,12 +110,12 @@ const totalExpenses = computed(() => {
 });
 
 const boostCount = computed(() => {
-  const depenses = store.analyzedData?.depenses || [];
+  const depenses = saleStore.expenses || [];
   return depenses.filter((d) => d.type === "boost").length || "-";
 });
 
 const vitrineCount = computed(() => {
-  const depenses = store.analyzedData?.depenses || [];
+  const depenses = saleStore.expenses || [];
   return depenses.filter((d) => d.type === "vitrine").length || "-";
 });
 </script>

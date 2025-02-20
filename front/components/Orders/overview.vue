@@ -6,7 +6,7 @@
         <h2>Commandes à traiter</h2>
         <p class="text">
           <span class="number">
-            {{ saleStore.sales.length }}
+            {{ orderStore.orders.length }}
           </span>
           commandes
         </p>
@@ -15,7 +15,7 @@
         <h2>Commandes expédiées</h2>
         <p class="text">
           <span class="number">
-            {{ saleStore.sales.length }}
+            {{ orderStore.orders.length }}
           </span>
           commandes
         </p>
@@ -28,9 +28,9 @@
             text="Recharger"
             iconLeft="refresh01"
             fit
-            :loading="saleStore.loading"
-            :disabled="saleStore.loading"
-            @click="saleStore.fetchSales()"
+            :loading="orderStore.loading"
+            :disabled="orderStore.loading"
+            @click="orderStore.fetchOrders()"
           />
         </div>
       </div>
@@ -39,7 +39,7 @@
 </template>
 
 <script setup lang="ts">
-const saleStore = useSaleStore();
+const orderStore = useOrderStore();
 import DefaultButton from "../Form/Buttons/defaultButton.vue";
 </script>
 
