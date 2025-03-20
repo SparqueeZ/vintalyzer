@@ -6,37 +6,37 @@ document.addEventListener("DOMContentLoaded", () => {
   // Variable pour déterminer si les données doivent être envoyées au backend ou sauvegardées localement
   const shouldSave = false; // true pour envoyer au backend, false pour sauvegarder localement
 
-  // Récupérer le token depuis localStorage du dashboard et le sauvegarder
-  saveTokenBtn.addEventListener("click", () => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      chrome.scripting.executeScript(
-        {
-          target: { tabId: tabs[0].id },
-          function: () => localStorage.getItem("ext_token"),
-        },
-        (results) => {
-          if (results && results[0].result) {
-            const token = results[0].result;
-            chrome.storage.local.set({ ext_token: token }, () => {
-              alert("Token enregistré !");
-              analyzeBtn.disabled = false; // Activer le bouton analyse
-            });
-          } else {
-            alert(
-              "Impossible de récupérer le token. Assurez-vous d'être sur le dashboard."
-            );
-          }
-        }
-      );
-    });
-  });
+  // // Récupérer le token depuis localStorage du dashboard et le sauvegarder
+  // saveTokenBtn.addEventListener("click", () => {
+  //   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+  //     chrome.scripting.executeScript(
+  //       {
+  //         target: { tabId: tabs[0].id },
+  //         function: () => localStorage.getItem("ext_token"),
+  //       },
+  //       (results) => {
+  //         if (results && results[0].result) {
+  //           const token = results[0].result;
+  //           chrome.storage.local.set({ ext_token: token }, () => {
+  //             alert("Token enregistré !");
+  //             analyzeBtn.disabled = false; // Activer le bouton analyse
+  //           });
+  //         } else {
+  //           alert(
+  //             "Impossible de récupérer le token. Assurez-vous d'être sur le dashboard."
+  //           );
+  //         }
+  //       }
+  //     );
+  //   });
+  // });
 
-  // Vérifier si un token est déjà stocké pour activer le bouton
-  chrome.storage.local.get("ext_token", (data) => {
-    if (data.ext_token) {
-      analyzeBtn.disabled = false;
-    }
-  });
+  // // Vérifier si un token est déjà stocké pour activer le bouton
+  // chrome.storage.local.get("ext_token", (data) => {
+  //   if (data.ext_token) {
+  //     analyzeBtn.disabled = false;
+  //   }
+  // });
 
   // Fonction pour envoyer les données au backend
   analyzeBtn.addEventListener("click", () => {
@@ -45,12 +45,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let evaluationsContent = [];
 
     chrome.storage.local.get("ext_token", async (data) => {
-      if (!data.ext_token) {
-        alert(
-          "Token non trouvé. Ouvrez le dashboard et cliquez sur 'Récupérer Token'."
-        );
-        return;
-      }
       const status = document.getElementById("status");
       const logs = document.getElementById("logs");
       let evaluationsContent = [];
@@ -153,32 +147,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const globalRating = document
               .querySelector(".rating-score-huge-text")
               ?.textContent.trim();
-            const ratingNumber = document
+            const evaluationsCount = document
               .querySelector(
-                ".web_ui__Text__text.web_ui__Text__body.web_ui__Text__left"
+                '[data-testid="rating-button"] .web_ui__Text__body'
               )
-              ?.textContent.replace(/[()]/g, "")
-              .trim();
-            const membersRatingAmount = document
-              .querySelector(
-                ".web_ui__Text__text.web_ui__Text__body.web_ui__Text__left.web_ui__Text__bold"
-              )
-              ?.textContent.match(/\d+/)?.[0];
-            const membersRatingValue = document
-              .querySelector(
-                ".web_ui__Cell__cell.web_ui__Cell__narrow .web_ui__Text__text"
-              )
-              ?.textContent.trim();
-            const autoRatingAmount = document
-              .querySelectorAll(
-                ".web_ui__Text__text.web_ui__Text__body.web_ui__Text__left.web_ui__Text__bold"
-              )[1]
-              ?.textContent.match(/\d+/)?.[0];
-            const autoRatingValue = document
-              .querySelectorAll(
-                ".web_ui__Cell__cell.web_ui__Cell__narrow .web_ui__Text__text"
-              )[1]
-              ?.textContent.trim();
+              ?.textContent.trim()
+              .match(/\d+/)?.[0];
 
             // Récupérer les articles
             const articles = Array.from(
@@ -250,12 +224,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const followers = document
               .querySelector('a[href*="/followers"]')
               ?.textContent.trim();
-            const evaluationsCount = document
-              .querySelector(
-                '[data-testid="rating-button"] .web_ui__Text__body'
-              )
-              ?.textContent.trim()
-              .match(/\d+/)?.[0];
+            const shopUrl = window.location.href;
 
             return {
               profile: profileText,
@@ -264,16 +233,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 name: shopName,
                 location: location,
                 followers: followers,
-                evaluationsCount: evaluationsCount,
-                globalRating: globalRating || "N/A",
-                ratingNumber: ratingNumber || "N/A",
-                membersRating: {
-                  amount: membersRatingAmount || "N/A",
-                  rating: membersRatingValue || "N/A",
-                },
-                autoRating: {
-                  amount: autoRatingAmount || "N/A",
-                  rating: autoRatingValue || "N/A",
+                url: shopUrl,
+                globalRatings: {
+                  count: evaluationsCount || "N/A",
+                  rating: globalRating || "N/A",
                 },
               },
             };
@@ -285,6 +248,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const { profile, articles, shop } = contentResult[0].result;
+
+        // Créer l'objet shopData initial
+        const shopData = { articles, shop, evaluations: [] };
 
         status.textContent =
           "✅ Analyse terminée ! Chargement des évaluations...";
@@ -310,6 +276,66 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Attendre que la page des évaluations charge
         await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        // Extraire les informations d'évaluation globales
+        const ratingsInfo = await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          func: () => {
+            const globalRating = document
+              .querySelector(".rating-score-huge-text")
+              ?.textContent.trim();
+            const evaluationsCount = document
+              .querySelector(
+                ".web_ui__Text__text.web_ui__Text__body.web_ui__Text__left"
+              )
+              ?.textContent.trim()
+              .replace(/[()]/g, "");
+            const memberRatingsCount = document
+              .querySelector(
+                ".web_ui__Text__text.web_ui__Text__body.web_ui__Text__left.web_ui__Text__bold"
+              )
+              ?.textContent.match(/\((\d+)\)/)?.[1];
+            const autoRatingsCount = document
+              .querySelectorAll(
+                ".web_ui__Text__text.web_ui__Text__body.web_ui__Text__left.web_ui__Text__bold"
+              )[1]
+              ?.textContent.match(/\((\d+)\)/)?.[1];
+
+            // Nouveaux sélecteurs pour les ratings
+            const ratings = Array.from(
+              document.querySelectorAll(
+                ".web_ui__Cell__cell.web_ui__Cell__narrow .web_ui__Cell__image .u-flexbox span.web_ui__Text__text"
+              )
+            ).map((el) => el.textContent.trim());
+
+            const memberRating = ratings[0] || "N/A";
+            const autoRating = ratings[1] || "N/A";
+
+            return {
+              globalRatings: {
+                count: evaluationsCount || "N/A",
+                rating: globalRating || "N/A",
+              },
+              memberRatings: {
+                count: memberRatingsCount,
+                rating: memberRating,
+              },
+              autoRatings: {
+                count: autoRatingsCount,
+                rating: autoRating,
+              },
+            };
+          },
+        });
+
+        if (!ratingsInfo[0]?.result) {
+          throw new Error(
+            "Impossible de récupérer les informations d'évaluation"
+          );
+        }
+
+        // Mettre à jour l'objet shopData avec les nouvelles informations
+        Object.assign(shopData.shop, ratingsInfo[0].result);
 
         const MAX_COMMENTS = 0; // Limite maximale de commentaires (0 pour illimité)
 
@@ -386,9 +412,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const evaluations = evaluationsContent[0].result;
         downloadJSON(evaluations, "evaluations.json");
 
-        const shopData = { articles, shop, evaluations };
+        // Mettre à jour les évaluations dans shopData
+        shopData.evaluations = evaluations;
 
-        if (shouldSave) {
+        if (shouldSave && ext_token) {
           // Envoyer les données au backend
           fetch("http://localhost:3001/api/ext/data", {
             method: "POST",
@@ -408,7 +435,7 @@ document.addEventListener("DOMContentLoaded", () => {
             })
             .then((responseText) => {
               console.log("Réponse brute du serveur:", responseText);
-              alert("Analyse envoyée !");
+              // alert("Analyse envoyée !");
             })
             .catch((error) => {
               console.error("Erreur lors de l'envoi:", error);
@@ -416,9 +443,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         } else {
           // Sauvegarder les données dans le stockage Chrome
-          chrome.storage.local.set({ shop_data: shopData }, () => {
-            alert("Données sauvegardées localement !");
-          });
+          chrome.storage.local.set({ shop_data: shopData }, () => {});
         }
 
         status.textContent = "✅ Terminé !";
@@ -428,78 +453,6 @@ document.addEventListener("DOMContentLoaded", () => {
         status.className = "error";
         addLog("Erreur : " + error.message);
       }
-
-      // Vérifier si on est bien sur une page Vinted
-      //   getActiveTabUrl((url) => {
-      //     if (!url || !url.includes("vinted.fr")) {
-      //       alert("Veuillez aller sur une boutique Vinted avant d'analyser.");
-      //       return;
-      //     }
-
-      //     // Extraire les données de la boutique
-      //     extractShopData((shopData) => {
-      //       if (!shopData) {
-      //         alert("Impossible d'extraire les données.");
-      //         return;
-      //       }
-
-      //       // Analyser les produits et les évaluations
-      //       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      //         analyzeShopContent(tabs[0].id)
-      //           .then((shopContent) => {
-      //             const finalData = {
-      //               ...shopData,
-      //               articles: shopContent.articles,
-      //               evaluations: shopContent.evaluations,
-      //             };
-
-      //             console.log("Données complètes de la boutique:", finalData);
-
-      //             // // Envoyer les données au serveur
-      //             // fetch("http://localhost:3001/api/ext/data", {
-      //             //   method: "POST",
-      //             //   headers: {
-      //             //     "Content-Type": "application/json",
-      //             //   },
-      //             //   body: JSON.stringify({
-      //             //     ext_token: data.ext_token,
-      //             //     shopData: finalData,
-      //             //   }),
-      //             // })
-      //             //   .then((response) => {
-      //             //     if (!response.ok) {
-      //             //       throw new Error(`Erreur HTTP: ${response.status}`);
-      //             //     }
-      //             //     return response.text(); // Utiliser text() pour la réponse brute
-      //             //   })
-      //             //   .then((responseText) => {
-      //             //     console.log("Réponse brute du serveur:", responseText);
-
-      //             //     // Si la réponse est bien du JSON, la parser
-      //             //     try {
-      //             //       const jsonResponse = JSON.parse(responseText);
-      //             //       console.log("Réponse JSON :", jsonResponse);
-      //             //       alert("Analyse envoyée !");
-      //             //     } catch (error) {
-      //             //       console.error("Erreur de parsing JSON:", error);
-      //             //       alert("La réponse du serveur n'est pas un JSON valide.");
-      //             //     }
-      //             //   })
-      //             //   .catch((error) => {
-      //             //     console.error("Erreur lors de l'envoi:", error);
-      //             //     alert("Erreur lors de l'analyse.");
-      //             //   });
-      //           })
-      //           .catch((error) => {
-      //             console.error(
-      //               "Erreur lors de l'analyse de la boutique:",
-      //               error
-      //             );
-      //             alert("Erreur lors de l'analyse de la boutique.");
-      //           });
-      //       });
-      //     });
-      //   });
     });
   });
 

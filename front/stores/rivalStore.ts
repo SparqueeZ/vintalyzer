@@ -47,6 +47,9 @@ export const useRivalStore = defineStore("rivals", {
   }),
   actions: {
     setShopData(data: FullData) {
+      console.log(
+        "TODO : Mettre à jour les données de la boutique concurrente"
+      );
       this.shop = data.shop;
       this.evaluations = data.evaluations;
       this.articles = data.articles;

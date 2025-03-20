@@ -84,7 +84,8 @@ exports.login = async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      //   sameSite: "Strict",
+      // sameSite: "none",
+      // secure: true,
     });
 
     res.status(200).json({ message: "Utilisateur connecté.", ext_token });
