@@ -69,6 +69,7 @@ import Chart from "chart.js/auto";
 const store = useDataStore();
 const chart = ref(null);
 let chartInstance = null;
+const saleStore = useSaleStore();
 
 const hasVentesStat = computed(() => {
   return store.analyzedData?.ventes_stat?.length > 0;
@@ -119,7 +120,10 @@ const updateChart = () => {
       labels: ["Vues", "Ventes"],
       datasets: [
         {
-          data: [totalViews.value - totalSales.value, totalSales.value],
+          data: [
+            saleStore.statistics.totalViews - saleStore.statistics.totalSales,
+            saleStore.statistics.totalSales,
+          ],
           backgroundColor: [
             "rgba(167, 139, 250, 0.2)",
             "rgba(167, 139, 250, 0.6)",

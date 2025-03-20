@@ -1,12 +1,21 @@
 import { acceptHMRUpdate, defineStore } from "pinia";
 import axios from "../assets/js/axios";
 
+import type {
+  Shop,
+  Sale,
+  Expense,
+  Comment,
+  Statistics,
+} from "../assets/types/shopTypes";
+
 export const useSaleStore = defineStore("sales", {
   state: () => ({
-    shop: {},
-    sales: [],
-    coments: [],
-    expenses: [],
+    shop: {} as Shop,
+    sales: [] as Sale[],
+    coments: [] as Comment[],
+    expenses: [] as Expense[],
+    statistics: {} as Statistics,
     loading: false,
     error: null as string | null,
   }),
@@ -32,7 +41,7 @@ export const useSaleStore = defineStore("sales", {
       this.error = null;
       try {
         const response = await axios.get("/api/sales/data");
-        console.log(response);
+        console.log("USERDATA", response);
         const fetchedShop = response.data.shops[0];
         const shop = {
           name: fetchedShop.name,
@@ -44,13 +53,15 @@ export const useSaleStore = defineStore("sales", {
           email: fetchedShop.email,
         };
         const sales = response.data.shops[0].Sales;
-        const coments = response.data.shops[0].Comments;
+        const coments = response.data.shops[0].Coments;
         const expenses = response.data.shops[0].Expenses;
+        const statistics = response.data.shops[0].Statistics[0];
         this.shop = shop;
         this.sales = sales;
         this.coments = coments;
         this.expenses = expenses;
-        console.log("SHOP INFO: ", sales);
+        this.statistics = statistics;
+        // console.log("COMEMNTS INFO: ", response.data.shops[0]);
       } catch (error: any) {
         this.error = error.message || "Une erreur s'est produite.";
         throw error;
@@ -67,12 +78,14 @@ export const useSaleStore = defineStore("sales", {
           ventes: this.sales,
           commentaires: this.coments,
           depenses: this.expenses,
+          statistics: this.statistics,
         });
         const response = await axios.post("/api/sales/load", {
           boutique: this.shop,
           ventes: this.sales,
           commentaires: this.coments,
           depenses: this.expenses,
+          statistics: this.statistics,
         });
         this.sales = response.data;
         return this.sales;
@@ -81,6 +94,20 @@ export const useSaleStore = defineStore("sales", {
         throw error;
       } finally {
         this.loading = false;
+      }
+    },
+    clearStore() {
+      console.warn("Clearing store...");
+      try {
+        this.shop = {} as Shop;
+        this.sales = [] as Sale[];
+        this.coments = [] as Comment[];
+        this.expenses = [] as Expense[];
+        console.log("Store cleared.");
+        return true;
+      } catch (error: any) {
+        this.error = error.message || "Une erreur s'est produite.";
+        throw error;
       }
     },
   },

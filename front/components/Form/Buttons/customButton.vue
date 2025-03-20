@@ -13,6 +13,11 @@
       fit: parentProps?.fit,
       iconOnly: parentProps?.iconOnly,
       reverseColor: parentProps?.reverseColor,
+      transparent: parentProps?.transparent,
+      reverseTextColors: parentProps?.reverseTextColors,
+      green: parentProps?.green,
+      orange: parentProps?.orange,
+      red: parentProps?.red,
     }"
     :type="parentProps?.type"
     @click="parentProps?.disabled ? null : $emit('click')"
@@ -102,7 +107,7 @@ const props = defineProps({
     }
   }
   &.small {
-    padding: 5px 10px;
+    padding: 5px 7px;
     max-height: 30px;
   }
   &.smallText {
@@ -119,6 +124,41 @@ const props = defineProps({
       color: var(--color-btn-clear-text);
       translate: 5px 1px;
     }
+  }
+  &.transparent {
+    background-color: transparent;
+    &.disabled {
+      background-color: var(--color-btn-disabled-bg);
+    }
+    &.cta {
+      background-color: var(--color-primary);
+      color: var(--color-btn-primary-text);
+      &:hover {
+        background-color: var(--color-primary-hover);
+      }
+    }
+    &:hover {
+      border: 1px solid var(--color-border);
+      background-color: var(--color-border);
+    }
+  }
+  &.green {
+    background-color: var(--color-green);
+    color: var(--color-primary-text);
+    border-color: var(--color-green);
+  }
+  &.orange {
+    background-color: var(--color-orange);
+    color: var(--color-primary-text);
+    border-color: var(--color-orange);
+  }
+  &.red {
+    background-color: var(--color-red);
+    color: var(--color-primary-text);
+    border-color: var(--color-red);
+  }
+  &.reverseTextColors {
+    color: var(--color-btn-primary-bg);
   }
   &.iconOnly {
     padding: 4px;

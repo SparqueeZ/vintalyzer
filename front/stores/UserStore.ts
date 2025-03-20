@@ -1,16 +1,6 @@
 import { acceptHMRUpdate, defineStore } from "pinia";
 import axios from "../assets/js/axios";
-import type { User, Role } from "../assets/types/usersTypes";
-
-type Product = {
-  id: string;
-  name: string;
-  price: number;
-  author: string;
-  category: string;
-  visible: boolean;
-  authorId: string;
-};
+import type { User, Role, Subscription } from "../assets/types/usersTypes";
 
 export const useUserStore = defineStore("users", {
   state: () => ({
@@ -22,6 +12,11 @@ export const useUserStore = defineStore("users", {
 
     loginPage: "" as "login" | "register" | "forgotPassword" | "",
     loginPageEmail: "" as string,
+
+    selectedRange: {
+      start: getFirstLoadedDate(),
+      end: new Date(),
+    } as { start: Date; end: Date },
   }),
   actions: {
     async register(
@@ -70,10 +65,12 @@ export const useUserStore = defineStore("users", {
           password,
         });
         if (response.status === 200) {
+          localStorage.setItem("ext_token", response.data.ext_token);
           const user = await axios.get("/api/auth/user");
           this.user = user.data;
         }
       } catch (error: any) {
+        console.error("LOGIN ERROR", error);
         this.error = error.message || "Une erreur s'est produite.";
       } finally {
         this.loading = false;
@@ -101,10 +98,14 @@ export const useUserStore = defineStore("users", {
       try {
         const user = await axios.get("/api/auth/user");
         this.user = user.data;
+        console.log("USER FETCHED", user.data);
         return user.data;
       } catch (error: any) {
+        console.error("FETCH ERROR", error);
         if (error.response && error.response.status === 403) {
           this.sessionError = "Session expirée. Veuillez vous reconnecter.";
+        } else if (error.response && error.response.status === 401) {
+          // this.sessionError = "Session invalide. Veuillez vous reconnecter.";
         } else {
           this.error = error.message || "Une erreur s'est produite.";
         }
@@ -155,8 +156,22 @@ export const useUserStore = defineStore("users", {
     updateLoginPageEmail(email: string) {
       this.loginPageEmail = email;
     },
+    setSubscription(subscription: Subscription) {
+      this.user.Subscription = subscription;
+    },
+    setSelectedRange(range: { start: Date; end: Date }) {
+      this.selectedRange = range;
+    },
   },
 });
+
+const getFirstLoadedDate = () => {
+  const startDate = new Date();
+  startDate.setMonth(0);
+  startDate.setDate(1);
+  startDate.setHours(0, 0, 0, 0);
+  return startDate;
+};
 
 if (import.meta.hot) {
   import.meta.hot.accept(acceptHMRUpdate(useUserStore, import.meta.hot));

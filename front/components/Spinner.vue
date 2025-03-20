@@ -3,7 +3,7 @@
     <div class="spinner">
       <div class="spinner-inner"></div>
     </div>
-    <p class="loading-text">Chargement...</p>
+    <p class="loading-text-inert">Chargement...</p>
   </div>
 </template>
 
@@ -19,7 +19,7 @@
   gap: 1rem;
 }
 
-.loading-text {
+.loading-text-inert {
   color: var(--color-text);
   font-size: 0.875rem;
   opacity: 0.8;

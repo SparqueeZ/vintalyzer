@@ -3,6 +3,9 @@ const {
   ShopModel,
   ComentModel,
   ExpenseModel,
+  Statistic,
+  SaleByBrand,
+  SaleWithBrand,
 } = require("../models");
 
 exports.getAllSales = async (req, res) => {
@@ -31,7 +34,7 @@ exports.getUserSales = async (req, res) => {
 
 exports.loadSales = async (req, res) => {
   const userId = req.user.id;
-  const { boutique, ventes, commentaires, depenses } = req.body;
+  const { boutique, ventes, commentaires, depenses, statistics } = req.body;
 
   try {
     // 1. Trouver ou créer la boutique
@@ -62,25 +65,16 @@ exports.loadSales = async (req, res) => {
       throw new Error("Shop operation failed: " + error.message);
     }
 
-    // 2. Ajouter les ventes sans doublons
+    // 2. Ajouter les ventes sans vérification de doublons
     try {
       for (const vente of ventes) {
-        const [sale, created] = await SaleModel.findOrCreate({
-          where: {
-            shopId: shop.id,
-            article: vente.article,
-            date: new Date(vente.date),
-          },
-          defaults: {
-            price: parseFloat(vente.price) || 0,
-            brand: vente.brand || null,
-          },
+        await SaleModel.create({
+          shopId: shop.id,
+          article: vente.article,
+          date: new Date(vente.date),
+          price: parseFloat(vente.price) || 0,
+          brand: vente.brand || null,
         });
-        if (!created) {
-          console.log(
-            `[INFO] Sale already exists: ${vente.article} on ${vente.date}`
-          );
-        }
       }
     } catch (error) {
       console.error("[ERROR] Sales operation failed:", error);
@@ -125,7 +119,44 @@ exports.loadSales = async (req, res) => {
       console.error("[ERROR] Expenses operation failed:", error);
     }
 
-    // 5. Récupérer les statistiques des opérations
+    // 5. Ajouter les statistiques
+    try {
+      // Créer les statistiques générales
+      const statistic = await Statistic.create({
+        shopId: shop.id,
+        conversionRate: statistics.conversionRate,
+        totalViews: statistics.totalViews,
+        totalSales: statistics.totalSales,
+        totalSalesPrice: statistics.totalSalesPrice,
+      });
+
+      // Pour chaque marque, créer une entrée dans SaleByBrand
+      for (const brandData of statistics.salesByBrandWithoutGroup) {
+        const saleByBrand = await SaleByBrand.create({
+          statisticId: statistic.id,
+          brand: brandData.brand,
+          count: brandData.count,
+          // totalPrice: brandData.totalPrice,
+          // totalViews: brandData.totalViews,
+        });
+
+        // Pour chaque vente de cette marque, créer une entrée dans SaleWithBrand
+        for (const sale of brandData.sales) {
+          await SaleWithBrand.create({
+            saleByBrandId: saleByBrand.id,
+            article: sale.item,
+            price: sale.price,
+            brand: sale.brand,
+            views: sale.views,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("[ERROR] Statistics operation failed:", error);
+      throw new Error("Statistics operation failed: " + error.message);
+    }
+
+    // 6. Récupérer les statistiques des opérations
     const stats = {
       shop: shop.isNewRecord ? "created" : "updated",
       salesCount: await SaleModel.count({ where: { shopId: shop.id } }),
@@ -153,35 +184,49 @@ exports.getUserData = async (req, res) => {
   try {
     const shops = await ShopModel.findAll({
       where: { userId: userId },
+      attributes: ["name", "email", "subscribers", "city", "country"],
       include: [
         {
           model: SaleModel,
           attributes: ["article", "price", "date", "brand"],
+          separate: true,
         },
         {
           model: ComentModel,
           attributes: ["author", "relativeDate", "content", "lang"],
+          separate: true,
         },
         {
           model: ExpenseModel,
           attributes: ["type", "article", "montant", "date"],
+          separate: true,
+        },
+        {
+          model: Statistic,
+          attributes: [
+            "conversionRate",
+            "totalViews",
+            "totalSales",
+            "totalSalesPrice",
+          ],
+          separate: true,
+          include: [
+            {
+              model: SaleByBrand,
+              attributes: ["brand", "count"],
+              separate: true,
+            },
+          ],
         },
       ],
-      order: [
-        ["createdAt", "DESC"],
-        [SaleModel, "date", "DESC"],
-        [ExpenseModel, "date", "DESC"],
-        [ComentModel, "createdAt", "DESC"],
-      ],
+      order: [["createdAt", "DESC"]],
     });
 
-    if (!shops) {
-      return res.status(404).json({ message: "No shops found for this user" });
-    }
+    const total = await ShopModel.count({ where: { userId: userId } });
 
     res.status(200).json({
       message: "User data retrieved successfully",
-      shops: shops,
+      shops,
     });
   } catch (error) {
     console.error("[ERROR] Error retrieving user data:", error);
@@ -190,4 +235,54 @@ exports.getUserData = async (req, res) => {
       error: error.message,
     });
   }
+
+  // try {
+  //   const shops = await ShopModel.findAll({
+  //     where: { userId: userId },
+  //     include: [
+  //       {
+  //         model: SaleModel,
+  //         attributes: ["article", "price", "date", "brand"],
+  //       },
+  //       {
+  //         model: ComentModel,
+  //         attributes: ["author", "relativeDate", "content", "lang"],
+  //       },
+  //       {
+  //         model: ExpenseModel,
+  //         attributes: ["type", "article", "montant", "date"],
+  //       },
+  //       {
+  //         model: Statistic,
+  //         include: [
+  //           {
+  //             model: SaleByBrand,
+  //           },
+  //         ],
+  //       },
+  //     ],
+  //     order: [
+  //       ["createdAt", "DESC"],
+  //       [SaleModel, "date", "DESC"],
+  //       [ExpenseModel, "date", "DESC"],
+  //       [ComentModel, "createdAt", "DESC"],
+  //     ],
+  //   });
+
+  //   if (!shops) {
+  //     return res.status(404).json({ message: "No shops found for this user" });
+  //   }
+
+  //   console.log("[INFO] User data retrieved successfully", shops);
+  //   res.status(200).json({
+  //     message: "User data retrieved successfully",
+  //     shops: shops,
+  //   });
+  // } catch (error) {
+  //   console.error("[ERROR] Error retrieving user data:", error);
+  //   res.status(500).json({
+  //     message: "Error retrieving user data",
+  //     error: error.message,
+  //   });
+  // }
 };

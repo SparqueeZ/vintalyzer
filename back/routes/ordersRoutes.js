@@ -9,5 +9,10 @@ router.get("/all", authenticateToken, ordersController.getAllOrders);
 
 // Route pour obtenir les ventes de l'utilisateur connecté
 router.get("/", authenticateToken, ordersController.getUserOrders);
+router.put(
+  "/:id/status",
+  authenticateToken,
+  ordersController.updateOrderStatus
+);
 
 module.exports = router;

@@ -42,8 +42,6 @@ const getBrand = (article: string) => {
   return brand;
 };
 
-const brands = [];
-
 export const getScanDate = (date: string) => {
   const scanDate = new Date(date);
   return scanDate;
@@ -120,9 +118,9 @@ export const getSalesData = async (text: string) => {
     const uniqueSales = new Set();
     const salesData = <any>[];
 
-    const sellData = extractAll(patterns.transactions, text);
-    if (sellData) {
-      sellData.forEach((match) => {
+    const saleData = extractAll(patterns.transactions, text);
+    if (saleData) {
+      saleData.forEach((match) => {
         const sale = {
           article: match[1],
           price: parseFloat(match[2].replace(",", ".")),
@@ -252,7 +250,7 @@ export const getStatisticsData = async (text: string) => {
     totalViews: number;
     count: number;
   }
-  const salesByBrand = <BrandStats[]>[];
+  const salesByBrandWithoutGroup = <BrandStats[]>[];
 
   articles.forEach((match) => {
     const article = {
@@ -263,14 +261,16 @@ export const getStatisticsData = async (text: string) => {
     };
 
     if (article.brand) {
-      const brandStats = salesByBrand.find((b) => b.brand === article.brand);
+      const brandStats = salesByBrandWithoutGroup.find(
+        (b) => b.brand === article.brand
+      );
       if (brandStats) {
         brandStats.sales.push(article);
         brandStats.totalPrice += article.price;
         brandStats.totalViews += article.views;
         brandStats.count++;
       } else {
-        salesByBrand.push({
+        salesByBrandWithoutGroup.push({
           brand: article.brand,
           sales: [article],
           totalPrice: article.price,
@@ -279,7 +279,7 @@ export const getStatisticsData = async (text: string) => {
         });
       }
     } else {
-      salesByBrand.push({
+      salesByBrandWithoutGroup.push({
         brand: "unknown",
         sales: [article],
         totalPrice: article.price,
@@ -289,19 +289,27 @@ export const getStatisticsData = async (text: string) => {
     }
   });
 
-  const totalViews = salesByBrand.reduce(
+  const totalViews = salesByBrandWithoutGroup.reduce(
     (sum, stats) => sum + stats.totalViews,
     0
   );
-  const totalSales = salesByBrand.reduce((sum, stats) => sum + stats.count, 0);
-  const totalSalesPrice = salesByBrand.reduce(
+  const totalSalesWithoutGroup = salesByBrandWithoutGroup.reduce(
+    (sum, stats) => sum + stats.count,
+    0
+  );
+  const totalSalesPriceWithoutGroup = salesByBrandWithoutGroup.reduce(
     (sum, stats) => sum + stats.totalPrice,
     0
   );
+
+  const salesData = await getSalesData(text);
+  const totalSales = salesData.length;
+  const totalSalesPrice = salesData.reduce((sum, sale) => sum + sale.price, 0);
+
   const conversionRate = totalViews > 0 ? (totalSales / totalViews) * 100 : 0;
 
   return {
-    salesByBrand,
+    salesByBrandWithoutGroup,
     conversionRate,
     totalViews,
     totalSales,

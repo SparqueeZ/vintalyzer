@@ -655,9 +655,10 @@ const analyze = async () => {
     saleStore.coments = data.comments;
     saleStore.sales = data.sales;
     saleStore.expenses = data.expenses;
-    console.log(saleStore.shop);
+    saleStore.statistics = data.statistics;
     const response = await saleStore.loadSalesToBackend();
     console.log("Back-end response :", response);
+    // console.log("Données analysées :", data);
   } catch (error) {
     console.error("Erreur lors de l'analyse :", error);
   }

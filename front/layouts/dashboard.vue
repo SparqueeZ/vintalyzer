@@ -12,15 +12,12 @@
             </SidebarInsideHeader>
             <SidebarInsideContent :menus="sidebarMenu" />
             <SidebarInsideFooter>
-              <ProfileCard :menu="profileMenu" rounded small
+              <ProfileCard rounded small
             /></SidebarInsideFooter>
           </Sidebar>
           <SidebarInset>
-            <div
-              class="flex flex-col w-full page-content-wrapper"
-              @contextmenu="handleContextMenu"
-            >
-              <!-- <header class="bg-white shadow-sm">
+            <div class="flex flex-col w-full page-content-wrapper">
+              <header class="bg-white shadow-sm">
                 <nav
                   class="container mx-auto p-4 flex justify-between items-center"
                 >
@@ -32,6 +29,7 @@
                           text="Retourner à l'accueil"
                           small
                           smallText
+                          transparent
                         />
                       </NuxtLink>
                     </li>
@@ -40,7 +38,7 @@
                     </li>
                   </ul>
                 </nav>
-              </header> -->
+              </header>
 
               <div class="py-4 w-full page-content">
                 <slot />
@@ -69,9 +67,13 @@ import ContextMenu from "~/components/ContextMenu.vue";
 import ChangeTheme from "~/components/Buttons/ChangeTheme.vue";
 import DefaultButton from "~/components/Form/Buttons/defaultButton.vue";
 import Spinner from "~/components/Spinner.vue";
+import defaultToast from "~/components/Toasts/defaultToast.vue";
+
 const { currentTheme, toggleTheme } = useTheme();
 const userStore = useUserStore();
 const orderStore = useOrderStore();
+const saleStore = useSaleStore();
+
 // await userStore.fetchUser();
 const router = useRouter();
 
@@ -93,40 +95,6 @@ const loadUser = async () => {
     }, 1000);
   }
 };
-
-const profileMenu = ref([
-  {
-    title: "Profile",
-    items: [
-      {
-        title: "Account",
-        icon: "userCircle",
-        to: "/app/account",
-        access: true,
-      },
-      {
-        title: "Settings",
-        icon: "settings",
-        to: "/app/settings",
-        access: true,
-      },
-    ],
-  },
-  {
-    title: "Logout",
-    items: [
-      {
-        title: "Logout",
-        icon: "logout",
-        to: "/app/login",
-        access: true,
-        func: () => {
-          userStore.logout();
-        },
-      },
-    ],
-  },
-]);
 
 // sidebarMenu
 const sidebarMenu = ref([
@@ -184,7 +152,7 @@ const sidebarMenu = ref([
       {
         title: "Mon compte",
         icon: "userCircle",
-        to: "/app/compte",
+        to: "/app/profil",
         access: true,
       },
       {
@@ -199,6 +167,7 @@ const sidebarMenu = ref([
         to: "/app/connexion",
         access: true,
         func: () => {
+          saleStore.clearStore();
           userStore.logout();
         },
       },
@@ -223,8 +192,6 @@ const handleItemClick = (item) => {
     item.func();
   }
 };
-
-const saleStore = useSaleStore();
 
 onMounted(async () => {
   await loadUser();

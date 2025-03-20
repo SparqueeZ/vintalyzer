@@ -1,4 +1,11 @@
 <template>
+  <defaultToast
+    v-if="userStore.sessionError"
+    color="error"
+    icon="warning01"
+    :text="userStore.sessionError"
+    :duration="3000"
+  />
   <section class="login-container">
     <Transition name="login">
       <section
@@ -38,6 +45,7 @@ import { useRouter } from "vue-router";
 import LoginAccountForm from "~/components/Login/LoginAccountForm.vue";
 import CreateAccountForm from "~/components/Login/CreateAccountForm.vue";
 import ForgotPasswordForm from "~/components/Login/ForgotPasswordForm.vue";
+import defaultToast from "~/components/Toasts/defaultToast.vue";
 
 const userStore = useUserStore();
 const router = useRouter();

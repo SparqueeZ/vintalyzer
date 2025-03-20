@@ -12,21 +12,24 @@
 
     <div class="form-wrapper">
       <form @submit.prevent="login">
-        <InputEmail
-          icon="mail01"
-          v-model:modelValue="email"
-          :value="email"
-          placeholder="Email"
-          fullSize
-        />
+        <div class="inputs">
+          <InputEmail
+            icon="mail01"
+            v-model:modelValue="email"
+            :value="email"
+            placeholder="Email"
+            fullSize
+          />
 
-        <InputPassword
-          icon="lock01"
-          v-model:modelValue="password"
-          :value="password"
-          placeholder="Entrez votre mot de passe"
-          fullSize
-        />
+          <InputPassword
+            icon="lock01"
+            v-model:modelValue="password"
+            :value="password"
+            placeholder="Entrez votre mot de passe"
+            fullSize
+          />
+        </div>
+
         <div class="text-link">
           <a class="text-link small" @click="handleForgotPassword"
             >Vous avez oublié votre mot de passe ?</a
@@ -114,6 +117,11 @@ const handleForgotPassword = () => {
       .names {
         display: flex;
         gap: 1rem;
+      }
+      .inputs {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
       }
     }
   }

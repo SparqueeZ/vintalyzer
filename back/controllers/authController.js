@@ -1,6 +1,8 @@
 const User = require("../models/userModel");
 const Role = require("../models/roleModel");
 const UserRole = require("../models/userRoleModel");
+const Subscription = require("../models/subscriptionModel");
+const userSubscription = require("../models/userSubscriptionModel");
 const { Sequelize, DataTypes } = require("sequelize");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -72,13 +74,20 @@ exports.login = async (req, res) => {
     const token = jwt.sign({ id: user.dataValues.id }, process.env.JWT_SECRET, {
       expiresIn: `${process.env.JWT_SECRET_EXPIRATION}`,
     });
+    const ext_token = jwt.sign(
+      { id: user.dataValues.id },
+      `${process.env.JWT_SECRET}ext`,
+      {
+        expiresIn: `${process.env.JWT_SECRET_EXPIRATION}`,
+      }
+    );
 
     res.cookie("token", token, {
       httpOnly: true,
       //   sameSite: "Strict",
     });
 
-    res.status(200).json({ message: "Utilisateur connecté." });
+    res.status(200).json({ message: "Utilisateur connecté.", ext_token });
   } catch (error) {
     console.error(
       "[ERROR] Erreur lors de la connexion de l'utilisateur.",
@@ -106,9 +115,27 @@ exports.getUserInformations = async (req, res) => {
           attributes: ["name", "createdAt", "updatedAt"],
           through: { attributes: [] },
         },
+        {
+          model: Subscription,
+          attributes: ["name", "price", "frequency", "createdAt", "updatedAt"],
+          through: { attributes: ["status", "startDate", "endDate"] },
+        },
       ],
     });
-    res.status(200).json(user);
+
+    const userResponse = {
+      ...user.toJSON(),
+      Subscription: user.Subscriptions[0]
+        ? {
+            ...user.Subscriptions[0].toJSON(),
+            status: user.Subscriptions[0].UserSubscription.status,
+            startDate: user.Subscriptions[0].UserSubscription.startDate,
+            endDate: user.Subscriptions[0].UserSubscription.endDate,
+          }
+        : null,
+    };
+
+    res.status(200).json(userResponse);
     console.log(
       "[SUCCESS] Informations de l'utilisateur récupérées avec succès."
     );

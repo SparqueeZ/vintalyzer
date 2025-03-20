@@ -91,7 +91,7 @@ Chart.register(
   Legend,
   Filler
 );
-const saleStore = useSaleStore();
+const store = useDataStore();
 const chart = ref(null);
 let chartInstance = null;
 
@@ -116,8 +116,8 @@ function formatMoney(amount: number) {
 }
 
 const filteredVentes = computed(() => {
-  if (!saleStore.sales) return [];
-  return saleStore.sales
+  if (!store.sales) return [];
+  return store.sales
     .filter((vente) => {
       const date = new Date(vente.date);
       return (
@@ -129,8 +129,8 @@ const filteredVentes = computed(() => {
 });
 
 const filteredDepenses = computed(() => {
-  if (!saleStore.expenses) return [];
-  return saleStore.expenses
+  if (!store.expenses) return [];
+  return store.expenses
     .filter((depense) => {
       const date = new Date(depense.date);
       return (
@@ -294,7 +294,7 @@ function updateChart() {
 }
 
 watch(
-  [() => saleStore, startDate, endDate],
+  [() => store, startDate, endDate],
   () => {
     nextTick(updateChart);
   },
@@ -302,9 +302,9 @@ watch(
 );
 
 onMounted(() => {
-  if (saleStore.sales?.length > 0) {
+  if (store.sales?.length > 0) {
     // Initialiser avec le dernier mois
-    const ventes = [...saleStore.sales].sort(
+    const ventes = [...store.sales].sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
     const latestDate = new Date(ventes[0].date);

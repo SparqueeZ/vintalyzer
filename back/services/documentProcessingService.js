@@ -8,7 +8,7 @@ class DocumentProcessingService {
 
     this.User = models.User;
     this.Customer = models.Customer;
-    this.Orsers = models.Order;
+    this.Orders = models.Order;
     this.ReturnForm = models.ReturnForm;
     this.ShippingLabel = models.ShippingLabel;
 
@@ -16,7 +16,7 @@ class DocumentProcessingService {
     if (
       !this.User ||
       !this.Customer ||
-      !this.Orsers ||
+      !this.Orders ||
       !this.ReturnForm ||
       !this.ShippingLabel
     ) {
@@ -24,28 +24,9 @@ class DocumentProcessingService {
     }
   }
 
-  async checkOrderExists(orderNumber) {
-    try {
-      const existingOrder = await this.Orsers.findOne({
-        where: { orderNumber: orderNumber },
-      });
-      return existingOrder !== null;
-    } catch (error) {
-      console.error("Erreur lors de la vérification de la vente:", error);
-      return false;
-    }
-  }
-
   async processOrderDocuments(orderData, userEmail) {
     try {
       console.log("Traitement de la commande:", orderData.orderNumber);
-
-      // Vérifier si la vente existe déjà
-      const orderExists = await this.checkOrderExists(orderData.orderNumber);
-      if (orderExists) {
-        console.log(`La vente ${orderData.orderNumber} existe déjà, ignorée.`);
-        return null;
-      }
 
       const user = await this.User.findOne({
         where: {
@@ -122,7 +103,7 @@ class DocumentProcessingService {
       }
 
       // Créer la vente avec les références aux documents
-      const order = await this.Orsers.create({
+      const order = await this.Orders.create({
         userId: user.id,
         customerId: customer.id,
         returnFormId,
@@ -132,6 +113,7 @@ class DocumentProcessingService {
         expenses:
           orderData.returnFormInfo.orderDetails.shippingCost +
           orderData.returnFormInfo.orderDetails.buyerProtection,
+        buyerProtection: orderData.returnFormInfo.orderDetails.buyerProtection,
         paymentMethod: "VINTED",
         mailSource: orderData.orderEmail.messageId,
         orderNumber: orderData.orderNumber,

@@ -1,103 +1,115 @@
 <template>
-  <div class="orders-overview-wrapper">
-    <h1 class="title">Commandes</h1>
-    <div class="orders-head">
-      <div class="dealing-orders category">
-        <h2>Commandes à traiter</h2>
-        <p class="text">
-          <span class="number">
-            {{ orderStore.orders.length }}
-          </span>
-          commandes
-        </p>
-      </div>
-      <div class="sended-orders category">
-        <h2>Commandes expédiées</h2>
-        <p class="text">
-          <span class="number">
-            {{ orderStore.orders.length }}
-          </span>
-          commandes
-        </p>
-      </div>
-
-      <div class="reload-orders category">
-        <h2>Rafraichir les commandes</h2>
-        <div class="reload-button">
-          <DefaultButton
-            text="Recharger"
-            iconLeft="refresh01"
-            fit
-            :loading="orderStore.loading"
-            :disabled="orderStore.loading"
-            @click="orderStore.fetchOrders()"
-          />
-        </div>
-      </div>
-    </div>
-  </div>
+  <section class="summaries-wrapper">
+    <OverviewCards
+      :content="summary"
+      splitFour
+      v-for="summary in summaries.filter(
+        (summary) => summary.title !== 'Rafraichir les commandes'
+      )"
+    />
+    <OverviewCards
+      splitFour
+      :content="
+        summaries.find(
+          (summary) => summary.title === 'Rafraichir les commandes'
+        ) || {
+          title: '',
+          value: '',
+          icon: '',
+          positive: '',
+          negative: '',
+          func: () => {},
+        }
+      "
+    >
+      <defaultButton
+        text="Recharger"
+        iconLeft="refresh01"
+        transparent
+        :loading="orderStore.loading"
+        :disabled="orderStore.loading"
+        @click="fetchOrders"
+      />
+    </OverviewCards>
+  </section>
 </template>
 
 <script setup lang="ts">
 const orderStore = useOrderStore();
 import DefaultButton from "../Form/Buttons/defaultButton.vue";
+
+const props = defineProps<{
+  selectedRange: { start: Date; end: Date };
+}>();
+
+definePageMeta({
+  layout: "dashboard",
+  middleware: ["auth"],
+});
+
+const ordersInSelectedDates = computed(() => {
+  let filteredOrders = orderStore.orders.filter((order) => {
+    const orderDate = new Date(order.orderDate);
+    return (
+      orderDate >= props.selectedRange.start &&
+      orderDate <= props.selectedRange.end
+    );
+  });
+  console.log("FILTRE: ", filteredOrders);
+  return filteredOrders;
+});
+
+const summaries = computed(() => {
+  return [
+    {
+      title: "Toutes les commandes",
+      value: orderStore.loading
+        ? "0"
+        : ordersInSelectedDates.value.length.toString(),
+      icon: "cardboard",
+      positive: "0",
+      negative: "0",
+    },
+    {
+      title: "Commandes à traiter",
+      value: orderStore.loading
+        ? "0"
+        : ordersInSelectedDates.value
+            .filter((order) => order.status === "0")
+            .length.toString(),
+      icon: "warningCircle",
+      positive: "0",
+      negative: "0",
+    },
+    {
+      title: "Commandes expédiées",
+      value: orderStore.loading
+        ? "0"
+        : ordersInSelectedDates.value
+            .filter((order) => order.status === "1")
+            .length.toString(),
+      icon: "deliveryTruck",
+      positive: "0",
+      negative: "0",
+    },
+    {
+      title: "Rafraichir les commandes",
+      value: "1",
+      icon: "refresh01",
+      positive: "0",
+      negative: "0",
+      func: () => orderStore.fetchOrders(),
+    },
+  ];
+});
 </script>
 
 <style scoped lang="scss">
-.orders-overview-wrapper {
+.summaries-wrapper {
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-.orders-wrapper {
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   gap: 2rem;
-
-  .title {
-    font-size: 2rem;
-    font-weight: bold;
-  }
-  .orders-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: var(--color-secondary-bg);
-    border-radius: 5px;
-    padding: 50px 10px;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    .category {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      padding: 0 50px;
-      &:nth-child(2) {
-        border-right: 1px solid var(--color-border);
-        border-left: 1px solid var(--color-border);
-      }
-
-      .number {
-        font-size: 4rem;
-        line-height: 4rem;
-        font-weight: bold;
-        color: var(--color-text);
-      }
-      h2 {
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: var(--color-text-subtitle);
-      }
-      .text {
-        font-size: 0.9rem;
-      }
-    }
-    .reload-button {
-      min-height: 64px;
-      display: flex;
-      align-items: end;
-    }
-  }
+  width: 100%;
+  justify-content: space-between;
 }
 </style>

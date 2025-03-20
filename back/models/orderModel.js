@@ -24,7 +24,6 @@ const Order = sequelize.define("Order", {
     },
   },
   returnFormId: {
-    // Nouveau champ
     type: DataTypes.UUID,
     allowNull: true,
     references: {
@@ -33,7 +32,6 @@ const Order = sequelize.define("Order", {
     },
   },
   shippingLabelId: {
-    // Nouveau champ
     type: DataTypes.UUID,
     allowNull: true,
     references: {
@@ -44,6 +42,7 @@ const Order = sequelize.define("Order", {
   orderDate: DataTypes.DATE,
   orderAmount: DataTypes.DECIMAL(10, 2),
   expenses: DataTypes.DECIMAL(10, 2),
+  buyerProtection: DataTypes.DECIMAL(10, 2),
   paymentMethod: DataTypes.STRING,
   mailSource: DataTypes.STRING,
   orderNumber: {
@@ -52,6 +51,9 @@ const Order = sequelize.define("Order", {
   },
   itemName: DataTypes.STRING,
   totalAmount: DataTypes.DECIMAL(10, 2),
+  status: { type: DataTypes.STRING, defaultValue: "0" },
+  createdAt: DataTypes.DATE,
+  updatedAt: DataTypes.DATE,
 });
 
 // Modification des associations

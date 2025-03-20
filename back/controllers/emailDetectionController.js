@@ -258,7 +258,7 @@ async function testEmailConnection() {
     await connection.openBox("INBOX");
 
     const date = new Date();
-    date.setDate(date.getDate() - 30);
+    date.setDate(date.getDate() - 100);
     const searchCriteria = ["ALL", ["SINCE", date]];
 
     const results = await connection.search(searchCriteria, {
@@ -352,15 +352,7 @@ async function testEmailConnection() {
             forwardedFrom
           );
 
-          if (order === null) {
-            skippedCount++;
-
-            printOrderDetails(orderNumber, orderData);
-            continue;
-          }
-
           processedCount++;
-
           printSuccess(
             `Commande ${orderNumber}: traitée avec succès (ID: ${order.id})`
           );

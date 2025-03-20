@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev --host",
+    "dev": "nuxt dev --no-fork --host",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
@@ -12,12 +12,13 @@
   "dependencies": {
     "@nuxtjs/tailwindcss": "^6.13.1",
     "@pinia/nuxt": "^0.9.0",
-    "axios": "^1.7.9",
-    "chart.js": "^4.4.7",
-    "chartjs": "^0.3.24",
-    "nuxt": "^3.15.4",
+    "@stripe/stripe-js": "^5.7.0",
+    "axios": "^1.8.1",
+    "chart.js": "^4.4.8",
+    "nuxt": "^3.6.0",
     "pinia": "^2.3.1",
     "vue": "latest",
+    "vue-chartjs": "^5.3.2",
     "vue-router": "latest",
     "world-countries": "^5.0.0"
   },
