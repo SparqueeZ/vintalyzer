@@ -9,7 +9,28 @@
 
     <div class="informations">
       <slot> </slot>
-      <p v-if="!content.func" class="value">{{ displayedValue }}</p>
+      <p v-if="!content.func && content.value" class="value">
+        {{ displayedValue }}
+      </p>
+      <div v-if="content.evaluation" class="evaluations-wrapper">
+        <div class="rating-stars">
+          <div v-for="(star, index) in stars" :key="index" class="star-wrapper">
+            <Icon
+              name="star01"
+              class="star-base"
+              :class="{
+                filled: star === 1,
+                empty: star === 0,
+              }"
+            />
+            <Icon v-if="star === 0.5" name="star01" class="star-overlay" />
+          </div>
+        </div>
+        <div class="rating-wrapper">
+          <p class="ratings">{{ content.evaluation.rating }}</p>
+          <p class="reviews">({{ content.evaluation.reviews }})</p>
+        </div>
+      </div>
       <div
         class="metric-wrapper"
         :class="
@@ -61,14 +82,16 @@ const props = defineProps<{
     icon: string;
     positive?: string;
     negative?: string;
+    evaluation?: {
+      rating: string;
+      reviews: string;
+    };
     func?: () => void;
   };
   splitThree?: boolean;
   splitFour?: boolean;
   loading?: boolean;
 }>();
-
-console.log(props.content);
 
 const displayedValue = ref(0);
 let animationFrameId: number | null = null;
@@ -131,6 +154,19 @@ watch(
   },
   { immediate: true }
 );
+
+const stars = computed(() => {
+  if (!props.content.evaluation) return [];
+  const rating = parseFloat(props.content.evaluation.rating);
+  return Array(5)
+    .fill(0)
+    .map((_, index) => {
+      const starValue = rating - index;
+      if (starValue >= 0.75) return 1;
+      if (starValue >= 0.25) return 0.5;
+      return 0;
+    });
+});
 </script>
 
 <style scoped lang="scss">
@@ -225,6 +261,59 @@ watch(
         .percentage {
           font-size: 0.9rem;
           color: var(--color-red);
+        }
+      }
+    }
+    .evaluations-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      .rating-stars {
+        display: flex;
+        gap: 4px;
+        .star-wrapper {
+          position: relative;
+          width: 20px;
+          height: 20px;
+
+          .icon {
+            width: 20px;
+            height: 20px;
+            stroke: var(--color-primary);
+            fill: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+
+            &.star-base {
+              &.filled {
+                fill: var(--color-primary);
+              }
+              &.empty {
+                fill: none;
+              }
+            }
+
+            &.star-overlay {
+              clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);
+              fill: var(--color-primary);
+            }
+          }
+        }
+      }
+      .rating-wrapper {
+        display: flex;
+        gap: 4px;
+        align-items: flex-end;
+        .ratings {
+          font-weight: bold;
+          font-size: 2rem;
+        }
+        .reviews {
+          font-size: 1rem;
+          color: var(--color-text-subtitle);
+          align-items: center;
+          margin-bottom: 8px;
         }
       }
     }

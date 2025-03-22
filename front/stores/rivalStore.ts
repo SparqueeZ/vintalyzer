@@ -8,15 +8,15 @@ interface RivalShop {
   rating: number;
   evaluationsCount: number; // Remplacer par reviews
   followers: number;
-  globalRating: string;
+  globalRatings: Rating;
   location: string;
-  autoRating: Rating;
-  membersRating: Rating;
+  autoRatings: Rating;
+  membersRatings: Rating;
   ratingNumber: string;
 }
 
 interface Rating {
-  amount: string;
+  count: string;
   rating: string;
 }
 

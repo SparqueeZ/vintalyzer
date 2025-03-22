@@ -171,7 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   '[data-testid*="price-text"], [class*="price"]:not([class*="protection"])'
                 );
                 const priceWithProtectionElement = article.querySelector(
-                  '[data-testid="product-item-id-5991246254--breakdown"] span.web_ui__Text__subtitle'
+                  'span.web_ui__Text__subtitle[class*="clickable"]'
                 );
                 const likesElement = article.querySelector(
                   '[data-testid*="--favourite"] span.web_ui__Text__caption'
@@ -193,9 +193,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         .replace("€", "")
                         .replace(",", ".")
                     )
-                  : 0;
+                  : price;
                 const protectionFee =
-                  priceWithProtection > 0 && price > 0
+                  priceWithProtection > price
                     ? parseFloat((priceWithProtection - price).toFixed(2))
                     : 0;
                 const likes = likesElement
