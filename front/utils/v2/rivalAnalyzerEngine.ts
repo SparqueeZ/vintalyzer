@@ -35,5 +35,12 @@ export const launchAnalysis = async (rivalShop: FullData) => {
   const shopScore = calculateScore(CompetitorData);
   console.log("shopScore:", shopScore);
 
-  return {};
+  return {
+    commentsData,
+    averagePrice,
+    CA,
+    brandsStats,
+    CompetitorData,
+    shopScore,
+  };
 };

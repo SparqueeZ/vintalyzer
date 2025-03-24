@@ -8,14 +8,15 @@
         <h2 class="title">{{ content?.title }}</h2>
       </div>
       <div class="link-btn-wrapper">
-        <defaultButton
-          v-if="content?.func"
-          text="Accéder"
-          iconLeft="linkSquare01"
-          transparent
-          fit
-          @click="content?.func"
-        />
+        <a :href="link" target="_blank">
+          <defaultButton
+            v-if="content?.func"
+            text="Accéder"
+            iconLeft="linkSquare01"
+            transparent
+            fit
+          />
+        </a>
       </div>
     </div>
 
@@ -56,6 +57,7 @@ const props = defineProps<{
   splitThree?: boolean;
   splitFour?: boolean;
   loading?: boolean;
+  link?: string;
 }>();
 
 console.log(props.content);
