@@ -39,11 +39,57 @@ interface FullData {
   articles: RivalArticle[];
 }
 
+interface Analysis {
+  internationalData: {};
+  averagePrice: number;
+  CA: CA;
+  brandStats: {};
+  competitor: {};
+  score: ScoreData;
+}
+
+interface CA {
+  dailyCA: number;
+  monthlyCA: number;
+  dailySales: number;
+  monthlySales: number;
+  globalCA: number;
+}
+
+interface ScoreData {
+  details: {
+    diversification: {
+      international: number;
+      brands: number;
+    };
+    engagement: {
+      subscribers: number;
+      rating: number;
+    };
+    sales: {
+      totalSales: number;
+      monthlySales: number;
+    };
+  };
+  level: {
+    color: string;
+    description: string;
+    max: number;
+    min: number;
+    name: string;
+    nicheAnalysis: string;
+    tips: string[];
+  };
+  scoreOn100: number;
+  totalScore: 75;
+}
+
 export const useRivalStore = defineStore("rivals", {
   state: () => ({
     shop: {} as RivalShop,
     evaluations: [] as RivalEvaluation[],
     articles: [] as RivalArticle[],
+    analysis: {} as Analysis,
   }),
   actions: {
     setShopData(data: FullData) {
@@ -58,6 +104,10 @@ export const useRivalStore = defineStore("rivals", {
       console.log(
         "TODO : Enregistrer les données de la boutique concurrente dans la base de données"
       );
+    },
+    setAnalysisData(data: Analysis) {
+      this.analysis = data;
+      console.log("Données d'analyse mises à jour: ", this.analysis);
     },
   },
 });

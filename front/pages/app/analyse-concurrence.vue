@@ -40,18 +40,21 @@
       />
     </article>
 
-    <section class="CA-overview" v-if="analysis.CA">
+    <Spacer :height="50" />
+
+    <section class="CA-overview" v-if="rivalStore.analysis.CA">
       <RivalCACard
         :content="{
           title: 'Ventes',
           subtitle: 'journalières (moyenne sur 30 jours)',
           value1: {
             title: 'CA / jour',
-            value: analysis.CA.dailyCA || '0',
+            value: rivalStore.analysis.CA.dailyCA.toFixed(2).toString() || '0',
           },
           value2: {
             title: 'Ventes / jour',
-            value: analysis.CA.dailyCA || '0',
+            value:
+              rivalStore.analysis.CA.dailySales.toFixed(2).toString() || '0',
           },
           positive: '0',
           negative: '0',
@@ -65,11 +68,13 @@
           subtitle: 'mensuelles (moyenne sur 30 jours)',
           value1: {
             title: 'CA / mois',
-            value: analysis.CA.monthlyCA || '0',
+            value:
+              rivalStore.analysis.CA.monthlyCA.toFixed(2).toString() || '0',
           },
           value2: {
             title: 'Ventes / mois',
-            value: analysis.CA.monthlyCA || '0',
+            value:
+              rivalStore.analysis.CA.monthlySales.toFixed(0).toString() || '0',
           },
           positive: '0',
           negative: '0',
@@ -78,19 +83,20 @@
       />
       <RivalCACard
         :content="{
-          title: `Chiffres d'affaires`,
-          subtitle: 'mensuelles (moyenne sur 30 jours)',
+          title: `Chiffre d'affaires`,
+          subtitle: 'mensuel (moyenne sur 30 jours)',
           value1: {
             title: 'CA total',
-            value: analysis.CA.globalCA || '0',
+            value: rivalStore.analysis.CA.globalCA.toFixed(2).toString() || '0',
           },
           value2: {
             title: 'Total commandes',
-            value: rivalStore.evaluations.length || '0',
+            value: rivalStore.evaluations.length.toString() || '0',
           },
           value3: {
             title: 'Prix moyen',
-            value: analysis.CA.globalCA || '0',
+            value:
+              rivalStore.analysis.averagePrice.toFixed(2).toString() || '0',
           },
           positive: '0',
           negative: '0',
@@ -99,14 +105,18 @@
       />
     </section>
 
-    <div>
+    <Spacer :height="50" />
+
+    <RivalScore v-if="rivalStore.analysis.score" />
+
+    <!-- <div>
       <h1>Données de la boutique</h1>
       <pre v-if="rivalStore.shop">
         {{ rivalStore.shop }}
     </pre
       >
       <p v-else>Aucune donnée disponible.</p>
-    </div>
+    </div> -->
   </section>
   <section v-else class="rival-analysis-wrapper">
     <p>Aucune donnée disponible.</p>
@@ -117,6 +127,7 @@
 import { ref, onMounted } from "vue";
 import { launchAnalysis } from "~/utils/v2/rivalAnalyzerEngine";
 import RivalCACard from "~/components/Rival/RivalCACard.vue";
+import RivalScore from "~/components/Rival/RivalScore.vue";
 const analysis = ref({
   CA: {
     dailyCA: 0,
@@ -163,6 +174,7 @@ onMounted(() => {
       });
       console.log(analysis.value);
       console.log("SHOP : ", rivalStore.shop);
+      rivalStore.setAnalysisData(analysis.value);
     }
   });
 });
@@ -197,6 +209,11 @@ definePageMeta({
   }
   .rival-profile-wrapper {
     width: 100%;
+    display: flex;
+    gap: 64px;
+  }
+
+  .CA-overview {
     display: flex;
     gap: 64px;
   }

@@ -7,18 +7,22 @@
       <h2 class="title">{{ content.title }}</h2>
     </div>
 
+    <div class="subtitle-wrapper">
+      <p class="subtitle">{{ content.subtitle }}</p>
+    </div>
+
     <div class="informations">
-      <div class="value">
-        <p v-if="content.value1">{{ content.value1.title }}</p>
-        <p v-if="content.value1">{{ content.value1.value }}</p>
+      <div class="value-wrapper">
+        <p v-if="content.value1" class="title">{{ content.value1.title }}</p>
+        <p v-if="content.value1" class="value">{{ content.value1.value }}€</p>
       </div>
-      <div class="value">
-        <p v-if="content.value2">{{ content.value2.title }}</p>
-        <p v-if="content.value2">{{ content.value2.value }}</p>
+      <div class="value-wrapper">
+        <p v-if="content.value2" class="title">{{ content.value2.title }}</p>
+        <p v-if="content.value2" class="value">{{ content.value2.value }}</p>
       </div>
-      <div class="value">
-        <p v-if="content.value3">{{ content.value3.title }}</p>
-        <p v-if="content.value3">{{ content.value3.value }}</p>
+      <div v-if="content.value3" class="value-wrapper">
+        <p v-if="content.value3" class="title">{{ content.value3.title }}</p>
+        <p v-if="content.value3" class="value">{{ content.value3.value }}€</p>
       </div>
     </div>
   </article>
@@ -140,10 +144,10 @@ const stars = computed(() => {
   border-radius: 0.5rem;
   background-color: transparent;
   border: var(--color-border) solid 1px;
-  width: fit-content;
+  width: 30%;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 16px;
 
   @media only screen and (min-width: 1224px) {
     // min-width: 45%;
@@ -154,6 +158,7 @@ const stars = computed(() => {
 
   .title-wrapper {
     display: flex;
+    gap: 8px;
     .icon-wrapper {
       display: flex;
       align-items: center;
@@ -180,114 +185,38 @@ const stars = computed(() => {
     }
   }
 
+  .subtitle-wrapper {
+    margin-top: -12px;
+    .subtitle {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--color-text-subtitle);
+    }
+  }
+
   .informations {
     display: flex;
     justify-content: space-between;
     align-items: center;
     height: 100%;
-    .metric-wrapper {
+    .value-wrapper {
       display: flex;
-      align-items: center;
-      border-radius: 5px;
-      height: fit-content;
-      padding: 0 8px 0 4px;
-      .icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 20px;
-        height: 20px;
-        stroke: var(--color-primary);
-        fill: none;
+      flex-direction: column;
+      .title {
+        font-size: 0.9rem;
+        color: var(--color-text-subtitle);
       }
-      .percentage {
-        font-size: 1.1rem;
+      .value {
+        margin-top: -5px;
+        font-size: 1.5rem;
+        font-weight: 700;
         color: var(--color-text);
       }
-      &.positive {
-        background-color: var(--color-bg-green);
-        border: 1px solid var(--color-green);
-        .icon {
-          stroke: var(--color-green);
-          transform: rotate(45deg);
-        }
-        .percentage {
-          font-size: 0.9rem;
-          color: var(--color-green);
-        }
-      }
-      &.negative {
-        background-color: var(--color-bg-red);
-        border: 1px solid var(--color-red);
-        .icon {
-          stroke: var(--color-red);
-          transform: rotate(135deg);
-        }
-        .percentage {
-          font-size: 0.9rem;
-          color: var(--color-red);
-        }
+      &:last-child {
+        justify-content: flex-end;
+        align-items: end;
       }
     }
-    .evaluations-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      .rating-stars {
-        display: flex;
-        gap: 4px;
-        .star-wrapper {
-          position: relative;
-          width: 20px;
-          height: 20px;
-
-          .icon {
-            width: 20px;
-            height: 20px;
-            stroke: var(--color-primary);
-            fill: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-
-            &.star-base {
-              &.filled {
-                fill: var(--color-primary);
-              }
-              &.empty {
-                fill: none;
-              }
-            }
-
-            &.star-overlay {
-              clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);
-              fill: var(--color-primary);
-            }
-          }
-        }
-      }
-      .rating-wrapper {
-        display: flex;
-        gap: 4px;
-        align-items: flex-end;
-        .ratings {
-          font-weight: bold;
-          font-size: 2rem;
-        }
-        .reviews {
-          font-size: 1rem;
-          color: var(--color-text-subtitle);
-          align-items: center;
-          margin-bottom: 8px;
-        }
-      }
-    }
-  }
-
-  .value {
-    font-size: 2rem;
-    font-weight: bold;
-    color: var(--color-text);
   }
 
   &.splitThree {

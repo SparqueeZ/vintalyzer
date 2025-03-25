@@ -40,7 +40,7 @@ export const launchAnalysis = async (rivalShop: FullData) => {
     averagePrice,
     CA,
     brandsStats,
-    CompetitorData,
-    shopScore,
+    competitor: CompetitorData,
+    score: shopScore,
   };
 };
