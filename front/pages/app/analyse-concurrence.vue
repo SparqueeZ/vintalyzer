@@ -109,6 +109,18 @@
 
     <RivalScore v-if="rivalStore.analysis.score" />
 
+    <Spacer :height="50" />
+
+    <RivalChart v-if="rivalStore.analysis.commentsData" />
+
+    <Spacer :height="50" />
+
+    <section class="chart-splitter">
+      <!-- <RivalBrandsChart v-if="rivalStore.analysis.brandStats" /> -->
+      <RivalInternationalChart v-if="rivalStore.analysis.commentsData" />
+      <RivalBrandsChart />
+    </section>
+
     <!-- <div>
       <h1>Données de la boutique</h1>
       <pre v-if="rivalStore.shop">
@@ -127,7 +139,10 @@
 import { ref, onMounted } from "vue";
 import { launchAnalysis } from "~/utils/v2/rivalAnalyzerEngine";
 import RivalCACard from "~/components/Rival/RivalCACard.vue";
+import RivalChart from "~/components/Rival/RivalChart.vue";
 import RivalScore from "~/components/Rival/RivalScore.vue";
+import RivalBrandsChart from "~/components/Rival/RivalBrandsChart.vue";
+import RivalInternationalChart from "~/components/Rival/RivalInternationalChart.vue";
 const analysis = ref({
   CA: {
     dailyCA: 0,
@@ -210,11 +225,18 @@ definePageMeta({
   .rival-profile-wrapper {
     width: 100%;
     display: flex;
-    gap: 64px;
+    justify-content: space-between;
   }
 
   .CA-overview {
+    width: 100%;
     display: flex;
+    justify-content: space-between;
+  }
+
+  .chart-splitter {
+    display: flex;
+    justify-content: space-between;
     gap: 64px;
   }
 }

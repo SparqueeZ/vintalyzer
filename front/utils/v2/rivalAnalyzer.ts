@@ -228,6 +228,7 @@ export const patterns = {
 
 export const getCommentsData = async (rivalShop: FullData) => {
   const comments = rivalShop.evaluations;
+  console.log("IL Y A ", rivalShop.evaluations.length, "COMMENTAIRES");
   // Stats by country
   const salesByCountry: { [key: string]: number } = {
     France: 0,
@@ -387,25 +388,25 @@ export const getBrandStats = (rivalShop: FullData) => {
   const articles = rivalShop.articles as RivalArticle[];
   // Get brand count
   const brandCount = articles.reduce((acc, a) => {
-    const existingBrand = acc.find((b) => b.brand === a.brand);
+    const existingBrand = acc.find((b) => b.name === a.brand);
     if (existingBrand) {
       existingBrand.count++;
     } else {
-      acc.push({ brand: a.brand, count: 1 });
+      acc.push({ name: a.brand, count: 1 });
     }
     return acc;
-  }, [] as { brand: string; count: number; percentage?: number }[]);
+  }, [] as { name: string; count: number; percentage?: number }[]);
 
   // Get brand with most articles
   const mostRepresentedBrand = brandCount.reduce(
-    (acc, { brand, count }) => {
+    (acc, { name, count }) => {
       if (count > acc.count) {
-        acc.brand = brand;
+        acc.name = name;
         acc.count = count;
       }
       return acc;
     },
-    { brand: "", count: 0 }
+    { name: "", count: 0 }
   );
 
   // Get top 5 brands

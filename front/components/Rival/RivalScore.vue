@@ -1,10 +1,16 @@
 <template>
   <section class="rival-score-wrapper">
     <div class="title-wrapper">
-      <div class="icon-wrapper">
-        <Icon name="chartUp"></Icon>
+      <div class="left-section">
+        <div class="icon-wrapper">
+          <Icon name="chartUp"></Icon>
+        </div>
+        <h2 class="title">Score de la boutique</h2>
       </div>
-      <h2 class="title">Score de la boutique</h2>
+      <div class="level-badge" :class="levelClass">
+        <span class="medal">{{ levelBadge }}</span>
+        {{ rivalStore.analysis.score.level.name }}
+      </div>
     </div>
 
     <div class="charts-wrapper">
@@ -28,77 +34,95 @@
     </div>
 
     <div class="scores-wrapper">
-      <div class="score-category engagement-wrapper">
-        <div class="score engagement">
-          <p class="title">Engagement</p>
-          <p class="value">
+      <div class="score-card">
+        <div class="total-card">
+          <h3 class="card-title">Engagement</h3>
+          <p class="highlighted-total gradient-text">
             {{
               rivalStore.analysis.score.details.engagement.rating +
               rivalStore.analysis.score.details.engagement.subscribers
             }}/25
           </p>
         </div>
-        <div class="score followers">
-          <p class="title">Abonnés</p>
-          <p class="value">
-            {{ rivalStore.analysis.score.details.engagement.subscribers }}/15
+        <div class="card-details">
+          <p>
+            <span class="detail-title">Abonnés</span>
+            <span class="detail-value"
+              >{{
+                rivalStore.analysis.score.details.engagement.subscribers
+              }}/15</span
+            >
           </p>
-        </div>
-        <div class="score evaluations">
-          <p class="title">Evaluation</p>
-          <p class="value">
-            {{ rivalStore.analysis.score.details.engagement.rating }}/15
+          <p>
+            <span class="detail-title">Évaluation</span>
+            <span class="detail-value"
+              >{{
+                rivalStore.analysis.score.details.engagement.rating
+              }}/10</span
+            >
           </p>
         </div>
       </div>
-      <div class="score-category sales-wrapper">
-        <div class="score sales">
-          <p class="title">Ventes</p>
-          <p class="value">
+
+      <div class="score-card">
+        <div class="total-card">
+          <h3 class="card-title">Ventes</h3>
+          <p class="highlighted-total gradient-text">
             {{
               rivalStore.analysis.score.details.sales.totalSales +
               rivalStore.analysis.score.details.sales.monthlySales
             }}/30
           </p>
         </div>
-        <div class="score sales-count">
-          <p class="title">Total</p>
-          <p class="value">
-            {{ rivalStore.analysis.score.details.sales.totalSales }}/15
+        <div class="card-details">
+          <p>
+            <span class="detail-title">Total</span>
+            <span class="detail-value"
+              >{{ rivalStore.analysis.score.details.sales.totalSales }}/15</span
+            >
           </p>
-        </div>
-        <div class="score monthly-sales">
-          <p class="title">Mensuel</p>
-          <p class="value">
-            {{ rivalStore.analysis.score.details.sales.monthlySales }}/15
+          <p>
+            <span class="detail-title">Mensuel</span>
+            <span class="detail-value"
+              >{{
+                rivalStore.analysis.score.details.sales.monthlySales
+              }}/15</span
+            >
           </p>
         </div>
       </div>
 
-      <div class="score-category diversitfication-wrapper">
-        <div class="score diversification">
-          <p class="title">Diversification</p>
-          <p class="value">
+      <div class="score-card">
+        <div class="total-card">
+          <h3 class="card-title">Diversification</h3>
+          <p class="highlighted-total gradient-text">
             {{
               rivalStore.analysis.score.details.diversification.international
             }}/20
           </p>
         </div>
-        <div class="score international">
-          <p class="title">International</p>
-          <p class="value">
-            {{
-              rivalStore.analysis.score.details.diversification.international
-            }}/20 ({{
-              rivalStore.analysis.score.details.diversification.brands
-            }}
-            pays)
+        <div class="card-details">
+          <p>
+            <span class="detail-title">International</span>
+            <span class="detail-value"
+              >{{
+                rivalStore.analysis.score.details.diversification.international
+              }}/20 ({{
+                Object.entries(
+                  rivalStore.analysis.commentsData.salesByCountry
+                ).filter(
+                  ([country, sales]) =>
+                    country.toLowerCase() !== "france" && sales > 0
+                ).length
+              }}
+              pays)</span
+            >
           </p>
         </div>
       </div>
     </div>
 
-    <div class="resume-wrapper">
+    <div class="resume-wrapper styled-resume">
       <div class="resume-title-wrapper">
         <p class="title">
           {{ rivalStore.analysis.score.level.name }}
@@ -118,8 +142,11 @@
       <div class="resume-keypoints-wrapper">
         <p class="title">Points clés</p>
         <ul class="keypoints">
-          <li v-for="keypoint in rivalStore.analysis.score.level.tips">
-            {{ keypoint }}
+          <li
+            v-for="keypoint in rivalStore.analysis.score.level.tips"
+            :key="keypoint"
+          >
+            <span class="bullet">•</span> {{ keypoint }}
           </li>
         </ul>
       </div>
@@ -250,6 +277,24 @@ const updateRadarChart = () => {
   });
 };
 
+const levelBadge = computed(() => {
+  const score = rivalStore.analysis.score.scoreOn100 || 0;
+  if (score >= 90) return "🏆"; // Elite - Or
+  if (score >= 75) return "🥈"; // Pro - Argent
+  if (score >= 60) return "🥉"; // Active - Bronze
+  if (score >= 40) return "🌱"; // Développement - Pousse
+  return "🆕"; // Débutante - Nouveau
+});
+
+const levelClass = computed(() => {
+  const score = rivalStore.analysis.score.scoreOn100 || 0;
+  if (score >= 90) return "bg-amber-400/20 text-amber-400";
+  if (score >= 75) return "bg-gray-400/20 text-gray-400";
+  if (score >= 60) return "bg-orange-700/20 text-orange-700";
+  if (score >= 40) return "bg-green-600/20 text-green-600";
+  return "bg-blue-500/20 text-blue-500";
+});
+
 // Initialize charts when component is mounted
 onMounted(() => {
   updateScoreChart();
@@ -269,79 +314,235 @@ watch(
 
 <style scoped lang="scss">
 .rival-score-wrapper {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  border: 1px solid var(--color-border);
-  padding: 16px 16px 12px 16px;
+  padding: 16px;
   border-radius: 0.5rem;
   background-color: transparent;
   border: var(--color-border) solid 1px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 
   .title-wrapper {
     display: flex;
-    gap: 8px;
-    .icon-wrapper {
+    justify-content: space-between;
+    align-items: center;
+
+    .left-section {
       display: flex;
       align-items: center;
-      justify-content: center;
-      background-color: var(--color-bg-tertiary);
-      height: 35px;
-      width: 35px;
-      border-radius: 5px;
-      border: var(--color-border) solid 1px;
-      .icon {
+      gap: 8px;
+
+      .icon-wrapper {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 25px;
-        height: 25px;
-        stroke: var(--color-primary);
-        fill: none;
+        background-color: var(--color-bg-tertiary);
+        height: 35px;
+        width: 35px;
+        border-radius: 5px;
+        border: var(--color-border) solid 1px;
+
+        .icon {
+          width: 25px;
+          height: 25px;
+          stroke: var(--color-primary);
+          fill: none;
+        }
       }
-    }
-    .title {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--color-text);
-    }
-  }
-}
 
-.charts-wrapper {
-  display: flex;
-  gap: 2rem;
-  margin: 2rem 0;
-  height: 300px;
-
-  .score-donut-wrapper,
-  .score-kiviat-wrapper {
-    flex: 1;
-    position: relative;
-
-    .chart {
-      height: 100%;
-      width: 100%;
-    }
-  }
-
-  .score-donut-wrapper {
-    .score-overlay {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-
-      .score {
-        font-size: 2rem;
-        font-weight: bold;
+      .title {
+        font-size: 1.25rem;
+        font-weight: 600;
         color: var(--color-text);
       }
+    }
 
-      .label {
+    .level-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: bold;
+      text-align: right;
+
+      .medal {
+        font-size: 1.25rem;
+      }
+    }
+  }
+
+  .charts-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+    align-items: center;
+
+    .score-donut-wrapper,
+    .score-kiviat-wrapper {
+      min-width: 300px;
+      max-width: 100%;
+      position: relative;
+
+      .chart {
+        height: 100%;
+        width: 100%;
+        max-height: 300px;
+        max-width: 300px;
+      }
+
+      .chart-info {
+        margin-top: 1rem;
+        text-align: center;
+
+        .info-title {
+          font-size: 1rem;
+          font-weight: bold;
+          color: var(--color-text);
+        }
+
+        .info-value {
+          font-size: 0.875rem;
+          color: var(--color-text-secondary);
+        }
+      }
+    }
+
+    .score-donut-wrapper {
+      flex: 1 1 30%; // Further reduce size of the global score chart
+      max-width: 200px; // Ensure the chart is smaller
+      position: relative;
+
+      .chart {
+        height: 100%;
+        width: 100%;
+        max-height: 200px; // Adjust max height
+        max-width: 200px; // Adjust max width
+      }
+
+      .score-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+
+        .score {
+          font-size: 1.8rem; // Slightly smaller font size
+          font-weight: bold;
+          color: var(--color-text);
+        }
+
+        .label {
+          font-size: 0.8rem; // Slightly smaller font size
+          color: var(--color-text-secondary);
+        }
+      }
+    }
+  }
+
+  .scores-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: space-between;
+
+    .score-card {
+      flex: 1 1 calc(33.33% - 16px);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      border: 1px solid var(--color-border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      .total-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: var(--color-bg-secondary);
+        border-radius: 0.5rem;
+
+        .card-title {
+          font-size: 1rem;
+          font-weight: bold;
+          color: var(--color-text);
+        }
+
+        .highlighted-total {
+          font-size: 1.2rem;
+          font-weight: bold;
+          background: linear-gradient(
+            0deg,
+            rgba(167, 139, 250, 0.8),
+            rgba(139, 92, 246, 0.8)
+          );
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+      }
+
+      .card-details {
         font-size: 0.875rem;
         color: var(--color-text-secondary);
+
+        p {
+          display: flex;
+          justify-content: space-between;
+          margin: 0;
+
+          .detail-title {
+            font-weight: bold;
+          }
+
+          .detail-value {
+            text-align: right;
+          }
+        }
+      }
+    }
+  }
+
+  .styled-resume {
+    background-color: var(--color-bg-tertiary);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-border);
+
+    .resume-title-wrapper,
+    .resume-niche-analysis-wrapper,
+    .resume-keypoints-wrapper {
+      margin-bottom: 1rem;
+
+      .title {
+        font-size: 1rem;
+        font-weight: bold;
+        color: var(--color-text);
+        margin-bottom: 0.5rem;
+      }
+
+      .description {
+        font-size: 0.875rem;
+        color: var(--color-text-secondary);
+      }
+
+      .keypoints {
+        list-style: none;
+        padding: 0;
+
+        li {
+          display: flex;
+          align-items: center;
+          font-size: 0.875rem;
+          color: var (--color-text-secondary);
+
+          .bullet {
+            color: var(--color-primary);
+            margin-right: 0.5rem;
+          }
+        }
       }
     }
   }

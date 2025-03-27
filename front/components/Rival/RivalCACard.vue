@@ -1,5 +1,5 @@
 <template>
-  <article class="summary" :class="{ splitThree, splitFour }">
+  <article class="summary" :class="content?.value3?.title ? 'long' : ''">
     <div class="title-wrapper">
       <div class="icon-wrapper">
         <Icon :name="content.icon"></Icon>
@@ -144,7 +144,7 @@ const stars = computed(() => {
   border-radius: 0.5rem;
   background-color: transparent;
   border: var(--color-border) solid 1px;
-  width: 30%;
+  min-width: 25%;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -219,11 +219,8 @@ const stars = computed(() => {
     }
   }
 
-  &.splitThree {
-    min-width: 30%;
-  }
-  &.splitFour {
-    width: 22%;
+  &.long {
+    min-width: 35%;
   }
 }
 </style>

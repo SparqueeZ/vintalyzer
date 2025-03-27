@@ -12,7 +12,7 @@ export const launchAnalysis = async (rivalShop: FullData) => {
   console.log("Lancement de l'analyse concurrente");
 
   const commentsData = await getCommentsData(rivalShop);
-  console.log("International data:", commentsData);
+  console.log("Comments data:", commentsData);
 
   const averagePrice = getAveragePrice(rivalShop);
   console.log("Average price:", averagePrice);

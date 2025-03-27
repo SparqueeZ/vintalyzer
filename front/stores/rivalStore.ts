@@ -40,12 +40,64 @@ interface FullData {
 }
 
 interface Analysis {
-  internationalData: {};
+  commentsData: CommentsData;
   averagePrice: number;
   CA: CA;
-  brandStats: {};
+  brandsStats: BrandStats;
   competitor: {};
   score: ScoreData;
+}
+
+interface Brand {
+  count: number;
+  name: string;
+  percentage?: number;
+}
+
+interface BrandStats {
+  brandCount: Brand[];
+  mostRepresentedBrand: Brand;
+  top5: Brand[];
+}
+
+interface Comment {
+  content: string;
+  date: string;
+  language: string;
+  memberName: string;
+  rating: string;
+}
+
+interface CommentsData {
+  commentList: Comment[];
+  commentsByLanguage: {
+    allemagne: Comment[];
+    anglais: Comment[];
+    auto: Comment[];
+    espagnol: Comment[];
+    francais: Comment[];
+    italien: Comment[];
+    neerlandais: Comment[];
+  };
+  internationalPercentage: {
+    Allemagne: number;
+    Anglophones: number;
+    Espagne: number;
+    Italie: number;
+    "Pays-bas": number;
+  };
+  internationalSales: {};
+  salesByCountry: {
+    Allemagne: number;
+    Anglophones: number;
+    Espagne: number;
+    France: number;
+    Italie: number;
+    "Pays-bas": number;
+  };
+  totalInternationalSales: number;
+  totalLocaleSales: number;
+  totalSales: number;
 }
 
 interface CA {
