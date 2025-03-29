@@ -37,19 +37,58 @@ export const useUserStore = defineStore("users", {
       }
 
       try {
+        console.log("[INFO] Sending registration request to the API");
         const response = await axios.post("/api/auth/register", {
           email,
           password,
           lastname,
           firstname,
+          displayname: firstname,
           role,
         });
-        if (response.status === 200) {
-          const user = await axios.get("/api/auth/user");
-          this.user = user.data;
+
+        if (response.status === 201) {
+          console.log("[SUCCESS] User registered successfully");
+          // Store auth token if one is returned
+          if (response.data.ext_token) {
+            localStorage.setItem("ext_token", response.data.ext_token);
+          }
+
+          // Try to get the user data
+          try {
+            const userResponse = await axios.get("/api/auth/user");
+            if (userResponse.data) {
+              this.user = userResponse.data;
+              return this.user;
+            }
+          } catch (userError) {
+            console.error(
+              "[ERROR] Failed to fetch user after registration:",
+              userError
+            );
+
+            // If user data fetch fails, try to login with the credentials
+            await this.login(email, password);
+          }
         }
       } catch (error: any) {
-        this.error = error.message || "Une erreur s'est produite.";
+        console.error("[ERROR] Registration error:", error);
+
+        // Provide more detailed error messages
+        if (error.code === "ERR_NETWORK") {
+          this.error =
+            "Erreur de connexion au serveur. Veuillez vérifier votre connexion internet.";
+        } else if (
+          error.response &&
+          error.response.data &&
+          error.response.data.error
+        ) {
+          this.error = error.response.data.error;
+        } else {
+          this.error =
+            error.message || "Une erreur s'est produite lors de l'inscription.";
+        }
+        throw error;
       } finally {
         this.loading = false;
       }
