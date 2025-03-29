@@ -6,6 +6,9 @@ DB_ADDRESS=db_address
 DB_DIALECT=mysql
 DB_LOGGING=false
 
+# Railway specific - uncomment when deploying
+# DATABASE_URL=${DB_DIALECT}://${DB_USER}:${DB_PASSWORD}@${DB_ADDRESS}:${DB_PORT}/${DB_NAME}
+
 EMAIL_SECRET=email_secret
 
 JWT_SECRET=jwt_secret
@@ -40,3 +43,7 @@ AWS_ACCESS_KEY_ID=aws_access_key_id
 AWS_SECRET_ACCESS_KEY=aws_secret_access_key
 AWS_REGION=aws_region
 AWS_BUCKET_NAME=aws_bucket_name
+
+# Railway specific - uncomment when deploying
+# NODE_ENV=production
+# RAILWAY_STATIC_URL=your_railway_app_url
