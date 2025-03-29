@@ -99,18 +99,46 @@ export const useUserStore = defineStore("users", {
       this.error = null;
 
       try {
+        console.log("[LOGIN] Attempting login with email:", email);
         const response = await axios.post("/api/auth/login", {
           email,
           password,
         });
+
         if (response.status === 200) {
+          console.log("[LOGIN] Login successful, ext_token received");
           localStorage.setItem("ext_token", response.data.ext_token);
-          const user = await axios.get("/api/auth/user");
-          this.user = user.data;
+
+          try {
+            console.log("[LOGIN] Fetching user data");
+            const user = await axios.get("/api/auth/user");
+            console.log("[LOGIN] User data received:", user.data);
+            this.user = user.data;
+          } catch (userError: any) {
+            console.error("[LOGIN] Error fetching user data:", userError);
+            if (userError.response) {
+              console.error(
+                "[LOGIN] Response status:",
+                userError.response.status
+              );
+              console.error("[LOGIN] Response data:", userError.response.data);
+            }
+            throw userError;
+          }
         }
       } catch (error: any) {
-        console.error("LOGIN ERROR", error);
-        this.error = error.message || "Une erreur s'est produite.";
+        console.error("[LOGIN ERROR]", error);
+        if (error.response) {
+          console.error("[LOGIN] Error status:", error.response.status);
+          console.error("[LOGIN] Error data:", error.response.data);
+          this.error =
+            error.response.data.error ||
+            "Une erreur s'est produite lors de la connexion.";
+        } else {
+          this.error =
+            error.message || "Une erreur s'est produite lors de la connexion.";
+        }
+        throw error;
       } finally {
         this.loading = false;
       }
