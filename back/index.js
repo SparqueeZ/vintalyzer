@@ -19,7 +19,6 @@ const emailDetectionController = require("./controllers/emailDetectionController
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 const app = express();
-// Remove the specific port number here, we'll use the PORT env var without fallback
 const PORT = process.env.PORT || 3000;
 
 // Enhanced CORS configuration for production use

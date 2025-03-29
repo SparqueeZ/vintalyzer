@@ -124,8 +124,9 @@ exports.login = async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      // sameSite: "none",
-      // secure: true,
+      sameSite: "none",
+      secure: true,
+      partitioned: true, // Adding partitioned attribute to comply with CHIPS
     });
 
     res.status(200).json({ message: "Utilisateur connecté.", ext_token });
