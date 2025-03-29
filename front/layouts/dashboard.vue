@@ -141,8 +141,8 @@ const sidebarMenu = ref([
       {
         title: "Parser",
         icon: "settings",
-        to: "/app/test-parser",
-        access: false,
+        to: "/app/parser-pro",
+        access: true,
       },
     ],
   },

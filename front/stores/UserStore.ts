@@ -24,7 +24,6 @@ export const useUserStore = defineStore("users", {
       password: string,
       lastname: string,
       firstname: string,
-      role: Role,
       acceptConditions: boolean
     ) {
       this.loading = true;
@@ -44,7 +43,7 @@ export const useUserStore = defineStore("users", {
           lastname,
           firstname,
           displayname: firstname,
-          role,
+          role: "CLIENT",
         });
 
         if (response.status === 201) {

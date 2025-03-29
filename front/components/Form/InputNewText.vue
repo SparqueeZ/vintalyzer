@@ -17,14 +17,6 @@
       />
 
       <slot name="events" />
-      <transition name="fade">
-        <Icon
-          class="clearBtn"
-          v-if="clearBtn"
-          name="cancel01"
-          @click="$emit('clear')"
-        />
-      </transition>
     </div>
     <div class="input-messages">
       <div class="important-messages">
@@ -66,6 +58,8 @@ const props = defineProps<{
   fullSize?: boolean;
 }>();
 
+const emit = defineEmits(["update:modelValue", "clear"]);
+
 const inputValue = ref(props.value || "");
 const shakeMaxCharsVar = ref(false);
 
@@ -84,6 +78,7 @@ const shakeMaxChars = () => {
 };
 
 watch(inputValue, (newValue) => {
+  emit("update:modelValue", newValue);
   if (props.maxChars && newValue.length > props.maxChars) {
     shakeMaxChars();
     inputValue.value = newValue.slice(0, props.maxChars);

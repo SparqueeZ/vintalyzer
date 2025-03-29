@@ -348,6 +348,7 @@ import ToggleButton from "../Form/Buttons/toggleButton.vue";
 import OrdersOverview from "~/components/Orders/overview.vue";
 import fixedContext from "../ContextMenu/fixedContext.vue";
 import ContextMenuButton from "../Form/Buttons/contextMenuButton.vue";
+import axiosInstance from "~/assets/js/axios"; // Import the axios instance
 const orderStore = useOrderStore();
 const toggleButtonListActive = ref(true);
 const toggleButtonCardActive = ref(false);
@@ -465,11 +466,6 @@ const handleStatusChange = async (orderId: string, newStatus: string) => {
 };
 
 const selectedButton = ref<HTMLElement | null>(null);
-const openContextMenu = (event: MouseEvent, order: Order) => {
-  event.preventDefault();
-  selectedButton.value = event.currentTarget as HTMLElement;
-  contextMenuVisible.value = true;
-};
 
 const sortState = ref<SortState>({});
 const getSortIcon = (column: string) => {
@@ -576,47 +572,24 @@ const downloadDocument = async (orderId: string, type: string) => {
     let url;
 
     if (type === "invoice") {
-      url = `${
-        import.meta.env.VITE_API_BASE_URL || "http://localhost:3001"
-      }/api/invoices/${orderId}`;
+      url = `/api/invoices/${orderId}`;
     } else {
       // Use the existing endpoint for other document types
-      url = `${
-        import.meta.env.VITE_API_BASE_URL || "http://localhost:3001"
-      }/api/documents/sale/${orderId}/${type}`;
+      url = `/api/documents/sale/${orderId}/${type}`;
     }
 
-    // For invoice, use a different approach since it may need to be generated
-    if (type === "invoice") {
-      console.log(`[INVOICE] Requesting invoice for order ${orderId}`);
+    console.log(`[DOCUMENT] Requesting ${type} for order ${orderId}`);
 
-      // Make a direct fetch request - don't use HEAD for invoices
-      const response = await fetch(url, {
-        method: "GET",
-        credentials: "include", // Important for auth cookies
+    // For invoice, use blob response type since it may need to be generated
+    if (type === "invoice") {
+      const response = await axiosInstance.get(url, {
+        responseType: "blob",
       });
 
-      if (!response.ok) {
-        // Try to get error details from response
-        let errorMessage = `Erreur ${response.status}: ${response.statusText}`;
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.error || errorMessage;
-          console.error(
-            `[INVOICE ERROR] ${errorMessage}`,
-            errorData.details || ""
-          );
-        } catch (e) {
-          // Response wasn't JSON, use default error
-        }
-
-        throw new Error(errorMessage);
-      }
-
-      // Get the blob from the response
-      const blob = await response.blob();
-
       // Create a download link and trigger it
+      const blob = new Blob([response.data], {
+        type: response.headers["content-type"] || "application/pdf",
+      });
       const downloadUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = downloadUrl;
@@ -633,19 +606,22 @@ const downloadDocument = async (orderId: string, type: string) => {
       return;
     }
 
-    // For other documents, continue using the existing logic with HEAD check
-    const response = await fetch(url, {
-      method: "HEAD",
-      credentials: "include", // Include auth cookies
-    });
+    // For other documents, check if they exist first
+    try {
+      // Use HEAD request to check if document exists
+      await axiosInstance.head(url);
 
-    if (!response.ok) {
-      throw new Error(`Document not available: ${response.statusText}`);
+      // Open the document in a new tab - use the full URL to avoid CORS issues
+      const fullUrl = axiosInstance.defaults.baseURL + url;
+      window.open(fullUrl, "_blank");
+    } catch (error: any) {
+      if (error.response && error.response.status === 404) {
+        throw new Error("Document non disponible");
+      } else {
+        throw error;
+      }
     }
-
-    // Open in new tab
-    window.open(url, "_blank");
-  } catch (error) {
+  } catch (error: any) {
     console.error("Erreur lors du téléchargement:", error);
     alert(
       `Le document n'est pas disponible: ${error.message || "Erreur inconnue"}`

@@ -1,6 +1,11 @@
 <template>
   <div class="checkbox-wrapper">
-    <input id="c1-13" type="checkbox" />
+    <input
+      id="c1-13"
+      type="checkbox"
+      :checked="checked"
+      @change="toggleCheck"
+    />
     <label for="c1-13">
       <slot></slot>
     </label>
@@ -10,25 +15,27 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
 
-const props = defineProps<{
-  label?: string;
+const emits = defineEmits<{
+  (e: "update:modelValue", value: boolean): void;
 }>();
 
-const checked = ref(false);
+const props = defineProps<{
+  modelValue: boolean;
+}>();
+
+const checked = ref(props.modelValue);
 
 const toggleCheck = () => {
   checked.value = !checked.value;
+  emits("update:modelValue", checked.value);
 };
 
-watch(checked, (newVal) => {
-  const checkbox = document.getElementById("checkbox");
-  if (checkbox) {
-    checkbox.classList.add("animate-check");
-    setTimeout(() => {
-      checkbox.classList.remove("animate-check");
-    }, 300);
+watch(
+  () => props.modelValue,
+  (newVal) => {
+    checked.value = newVal;
   }
-});
+);
 </script>
 
 <style lang="scss" scoped>
