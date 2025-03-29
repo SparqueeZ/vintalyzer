@@ -5,7 +5,11 @@
         <div class="welcomeMessage-wrapper">
           <h1 class="title">Bienvenue {{ userStore.user.firstname }},</h1>
           <p class="subtitle">
-            Voici une vue d'ensemble de votre boutique vinted.
+            {{
+              saleStore.shop.name
+                ? "Voici un aperçu de votre boutique"
+                : "Vous n'avez pas encore de boutique."
+            }}
           </p>
         </div>
         <CalendarInput
@@ -25,28 +29,15 @@
       <Engagement v-if="saleStore.shop.name" />
       <StatsByCountry v-if="saleStore.shop.name" />
     </section>
-
-    <!-- <div class="store-informations-wrapper">
-      <div class="store-informations">
-        <ShopStats />
-      </div>
-    </div>
-    <div class="orders-informations-wrapper">
-      <div class="orders-informations">
-        <SalesStats />
-        <p>Commandes à traiter</p>
-        <p>Commandes à envoyer</p>
-        <ExpenseStats />
-      </div>
-    </div>
-    <div class="flex flex-wrap gap-4 mt-6">
-      <!-- <SalesChart />
-      <p>Commandes récentes</p>
-    </div> -->
   </section>
   <section v-if="!saleStore.shop.name" class="dashboard-wrapper no-shop">
     <p class="error-message main">Vous n'avez pas encore de boutique. <br /></p>
-    <p>Nouveau sur la plateforme ? Configurez votre boutique</p>
+    <p>
+      Nouveau sur la plateforme ?
+      <span class="link">
+        <nuxt-link to="/app/parser-pro">Configurez votre boutique</nuxt-link>
+      </span>
+    </p>
     <DefaultButton text="Recharger" transparent fit />
   </section>
 </template>
@@ -89,6 +80,14 @@ definePageMeta({
     font-weight: bold;
     color: var(--color-text);
     text-align: center;
+  }
+  .link {
+    color: var(--color-text-subtitle);
+    text-decoration: underline;
+    transition: 0.3s ease color;
+    &:hover {
+      color: var(--color-text);
+    }
   }
   &.no-shop {
     gap: 16px;

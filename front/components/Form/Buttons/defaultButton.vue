@@ -21,7 +21,7 @@
     <div v-if="tooltip" class="tooltip-wrapper">
       <p class="tooltip">{{ tooltip }}</p>
     </div>
-    <nuxt-link :to="link && !disabled" v-if="link">
+    <nuxt-link :to="!disabled ? link : undefined" v-if="link">
       <customButton :parentProps="props">
         <div v-if="iconLeft" class="icon-container">
           <Icon :name="iconLeft" />

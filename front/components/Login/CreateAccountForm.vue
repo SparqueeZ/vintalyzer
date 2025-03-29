@@ -25,13 +25,13 @@
     <div class="form-wrapper">
       <form @submit.prevent="registerUser">
         <div class="names">
-          <InputText
+          <InputNewText
             icon="user"
             v-model:modelValue="lastname"
             :value="lastname"
             placeholder="Nom"
           />
-          <InputText
+          <InputNewText
             icon="user"
             v-model:modelValue="firstname"
             :value="firstname"
@@ -91,25 +91,27 @@
 </template>
 
 <script setup lang="ts">
-import InputText from "~/components/Form/InputNewText.vue";
+import InputNewText from "~/components/Form/InputNewText.vue";
 import InputEmail from "~/components/Form/InputEmail.vue";
 import InputPassword from "~/components/Form/InputPassword.vue";
 import CheckBox from "~/components/Form/CheckBox.vue";
 import DefaultButton from "~/components/Form/Buttons/defaultButton.vue";
 const userStore = useUserStore();
 
-const lastname = ref<string>("dijoux");
-const firstname = ref<string>("baptiste");
-const email = ref<string>("baptiste.dijouxn20@gmail.com");
-const password = ref<string>("test");
-const confirmPassword = ref<string>("test");
-const acceptConditions = ref<boolean>(true);
+const lastname = ref<string>("");
+const firstname = ref<string>("");
+const email = ref<string>("");
+const password = ref<string>("");
+const confirmPassword = ref<string>("");
+const acceptConditions = ref<boolean>(false);
 const formError = ref<string | null>(null);
 
 const emits = defineEmits(["changeForm", "register"]);
 
 const registerUser = async () => {
   formError.value = null;
+
+  console.log("acceptConditions", acceptConditions.value);
 
   // Validate inputs
   if (!lastname.value || !firstname.value || !email.value || !password.value) {
@@ -128,7 +130,6 @@ const registerUser = async () => {
       password.value,
       lastname.value,
       firstname.value,
-      "CLIENT", // Default role for new users
       acceptConditions.value
     );
 
