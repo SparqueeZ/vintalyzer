@@ -27,7 +27,8 @@ app.use(
     origin: function (origin, callback) {
       const allowedOrigins = [
         process.env.FRONT_URL,
-        "https://vintalyze.shapee.re", // Add your production domain
+        "https://vintalyze.shapee.re",
+        "http://localhost:3000",
         "http://192.168.1.11:3000",
         "chrome-extension://nilnijhogiifjkbgbiaaonkcckemnfpd",
         "chrome-extension://mpnhomcmacodllmklmaecenfliofknjk",
@@ -38,8 +39,7 @@ app.use(
         callback(null, true);
       } else {
         console.log(`Origin ${origin} not allowed by CORS`);
-        // In production, you should change this to callback(new Error('Not allowed by CORS'))
-        callback(null, true); // Allow all origins in development
+        callback(null, false);
       }
     },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
@@ -57,6 +57,9 @@ app.use(
     maxAge: 86400, // 24 hours
   })
 );
+
+// Ensure cookie parser is configured early in the middleware chain
+app.use(cookieParser());
 
 // Handle OPTIONS preflight requests properly
 app.options("*", cors());

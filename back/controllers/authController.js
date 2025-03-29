@@ -122,12 +122,24 @@ exports.login = async (req, res) => {
       }
     );
 
+    // Set appropriate CORS headers for cookies
+    res.header(
+      "Access-Control-Allow-Origin",
+      req.headers.origin || process.env.FRONT_URL
+    );
+    res.header("Access-Control-Allow-Credentials", "true");
+
+    // Set the cookie with correct attributes for cross-origin
     res.cookie("token", token, {
       httpOnly: true,
-      sameSite: "none",
-      secure: true,
-      partitioned: true, // Adding partitioned attribute to comply with CHIPS
+      sameSite: "none", // Important for cross-origin requests
+      secure: true, // Required when sameSite is 'none'
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
+      path: "/", // Ensure cookie is available across all paths
     });
+
+    // Log success for debugging
+    console.log("[SUCCESS] Authentication successful, token cookie set");
 
     res.status(200).json({ message: "Utilisateur connecté.", ext_token });
   } catch (error) {
