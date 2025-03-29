@@ -15,9 +15,19 @@ require("dotenv").config();
 
 exports.register = async (req, res) => {
   console.log("[INFO] Registering user");
+  // Set CORS headers explicitly for this route
+  res.header("Access-Control-Allow-Origin", req.headers.origin);
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin,X-Requested-With,Content-Type,Accept,Authorization"
+  );
+
   try {
-    const { lastname, firstname, displayname, email, password } = req.body;
-    if (!lastname || !firstname || !displayname || !email || !password) {
+    const { lastname, firstname, displayname, email, password, role } =
+      req.body;
+    if (!lastname || !firstname || !email || !password) {
       console.error("[ERROR] Tous les champs sont requis.");
       return res.status(400).json({ error: "Tous les champs sont requis." });
     }
@@ -28,17 +38,47 @@ exports.register = async (req, res) => {
       return res.status(400).json({ error: "L'utilisateur existe déjà." });
     }
 
+    // Use firstname as displayname if not provided
+    const userDisplayname = displayname || firstname;
+
     const user = await User.create({
       lastname,
       firstname,
-      displayname,
+      displayname: userDisplayname,
       email,
       password,
+      emailConfirmed: 0, // Set email as not confirmed initially
     });
 
-    res
-      .status(201)
-      .json({ message: "Utilisateur enregistré avec succès.", user });
+    // Find default role or use provided role
+    let roleToAssign;
+    if (role) {
+      roleToAssign = await Role.findOne({ where: { name: role } });
+    } else {
+      roleToAssign = await Role.findOne({ where: { name: "CLIENT" } });
+    }
+
+    if (roleToAssign) {
+      await UserRole.create({
+        userId: user.id,
+        roleId: roleToAssign.id,
+      });
+    }
+
+    // Send confirmation email
+    try {
+      await sendEmailConfirmation(user);
+      console.log("[INFO] Confirmation email sent to user");
+    } catch (emailError) {
+      console.error("[ERROR] Failed to send confirmation email:", emailError);
+      // We continue even if email sending fails
+    }
+
+    res.status(201).json({
+      message:
+        "Utilisateur enregistré avec succès. Veuillez vérifier votre email pour confirmer votre compte.",
+      user,
+    });
   } catch (error) {
     if (error.name === "SequelizeValidationError") {
       console.error("[ERROR] Erreur de validation.", error);
@@ -350,16 +390,38 @@ exports.requestEmailConfirmation = async (req, res) => {
 exports.confirmEmail = async (req, res) => {
   try {
     const { token } = req.body;
-    const user = await User.findOne({ where: { emailConfirmed: 0 } });
-    const decoded = jwt.verify(token, process.env.EMAIL_SECRET);
-    if (user.id === decoded.id) {
-      user.emailConfirmed = 1;
-      await user.save();
-      res.status(200).json({ message: "Email confirmé." });
-    } else {
+
+    if (!token) {
+      console.error("[ERROR] Token de confirmation d'email manquant.");
+      return res
+        .status(400)
+        .json({ error: "Token de confirmation d'email manquant." });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.EMAIL_SECRET);
+    } catch (jwtError) {
+      console.error(
+        "[ERROR] Token de confirmation invalide ou expiré:",
+        jwtError
+      );
+      return res
+        .status(400)
+        .json({ error: "Token de confirmation invalide ou expiré." });
+    }
+
+    const user = await User.findByPk(decoded.id);
+
+    if (!user) {
       console.error("[ERROR] Utilisateur non trouvé.");
       return res.status(404).json({ error: "Utilisateur non trouvé." });
     }
+
+    user.emailConfirmed = 1;
+    await user.save();
+
+    res.status(200).json({ message: "Email confirmé avec succès." });
   } catch (error) {
     console.error("[ERROR] Erreur lors de la confirmation de l'email.", error);
     res.status(500).json({

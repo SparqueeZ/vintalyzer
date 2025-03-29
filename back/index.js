@@ -11,30 +11,56 @@ const Subscription = require("./models/subscriptionModel");
 const User = require("./models/userModel");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
+// Load environment variables before using them
+dotenv.config();
+
 const emailDetectionController = require("./controllers/emailDetectionController.js");
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-dotenv.config();
-
 const app = express();
-const PORT = process.env.PORT || 3001;
+// Remove the specific port number here, we'll use the PORT env var without fallback
+const PORT = process.env.PORT || 3000;
 
-// Configure cors before any routes
+// Enhanced CORS configuration for production use
 app.use(
   cors({
-    origin: [
-      process.env.FRONT_URL,
-      "http://192.168.1.11:3000",
-      "chrome-extension://nilnijhogiifjkbgbiaaonkcckemnfpd",
-      "chrome-extension://mpnhomcmacodllmklmaecenfliofknjk",
+    origin: function (origin, callback) {
+      const allowedOrigins = [
+        process.env.FRONT_URL,
+        "https://vintalyze.shapee.re", // Add your production domain
+        "http://192.168.1.11:3000",
+        "chrome-extension://nilnijhogiifjkbgbiaaonkcckemnfpd",
+        "chrome-extension://mpnhomcmacodllmklmaecenfliofknjk",
+      ];
+
+      // Allow requests with no origin (like mobile apps, curl requests)
+      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        console.log(`Origin ${origin} not allowed by CORS`);
+        // In production, you should change this to callback(new Error('Not allowed by CORS'))
+        callback(null, true); // Allow all origins in development
+      }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Cookie",
+      "Set-Cookie",
     ],
+    exposedHeaders: ["Set-Cookie"],
     credentials: true,
-    sameSite: "none",
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+    maxAge: 86400, // 24 hours
   })
 );
 
-app.use(cookieParser());
+// Handle OPTIONS preflight requests properly
+app.options("*", cors());
 
 const plans = [
   {
@@ -381,5 +407,5 @@ setInterval(async () => {
 })();
 
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });

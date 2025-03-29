@@ -14,7 +14,7 @@
         class="register-form-wrapper"
         v-if="userStore.loginPage === 'register'"
       >
-        <CreateAccountForm />
+        <CreateAccountForm @register="handleRegisterSuccess" />
       </section>
     </transition>
 
@@ -50,6 +50,15 @@ watch(
     }
   }
 );
+
+const handleRegisterSuccess = () => {
+  if (userStore.user && Object.keys(userStore.user).length > 0) {
+    router.push("/app");
+  } else {
+    // Redirect to login page if user wasn't automatically logged in
+    userStore.changeLoginPage("login");
+  }
+};
 
 definePageMeta({
   layout: "no-header",

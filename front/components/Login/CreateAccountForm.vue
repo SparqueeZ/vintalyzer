@@ -23,7 +23,7 @@
     </div>
 
     <div class="form-wrapper">
-      <form @submit.prevent="emits('register')">
+      <form @submit.prevent="registerUser">
         <div class="names">
           <InputText
             icon="user"
@@ -62,6 +62,12 @@
           placeholder="Confirmez votre mot de passe"
           fullSize
         />
+
+        <div v-if="formError" class="error-message">{{ formError }}</div>
+        <div v-if="userStore.error" class="error-message">
+          {{ userStore.error }}
+        </div>
+
         <CheckBox
           v-model:modelValue="acceptConditions"
           :value="acceptConditions"
@@ -72,7 +78,13 @@
           >
         </CheckBox>
         <Spacer :height="50" />
-        <DefaultButton text="S'enregistrer" cta />
+        <DefaultButton
+          text="S'enregistrer"
+          cta
+          :loading="userStore.loading"
+          :disabled="userStore.loading"
+          @click="registerUser"
+        />
       </form>
     </div>
   </section>
@@ -86,17 +98,51 @@ import CheckBox from "~/components/Form/CheckBox.vue";
 import DefaultButton from "~/components/Form/Buttons/defaultButton.vue";
 const userStore = useUserStore();
 
-const lastname = ref<string>("");
-const firstname = ref<string>("");
-const email = ref<string>("");
-const password = ref<string>("");
-const confirmPassword = ref<string>("");
-const acceptConditions = ref<boolean>(false);
+const lastname = ref<string>("dijoux");
+const firstname = ref<string>("baptiste");
+const email = ref<string>("baptiste.dijouxn20@gmail.com");
+const password = ref<string>("test");
+const confirmPassword = ref<string>("test");
+const acceptConditions = ref<boolean>(true);
+const formError = ref<string | null>(null);
 
 const emits = defineEmits(["changeForm", "register"]);
 
-const register = () => {
-  console.log("register");
+const registerUser = async () => {
+  formError.value = null;
+
+  // Validate inputs
+  if (!lastname.value || !firstname.value || !email.value || !password.value) {
+    formError.value = "Veuillez remplir tous les champs obligatoires.";
+    return;
+  }
+
+  if (password.value !== confirmPassword.value) {
+    formError.value = "Les mots de passe ne correspondent pas.";
+    return;
+  }
+
+  try {
+    await userStore.register(
+      email.value,
+      password.value,
+      lastname.value,
+      firstname.value,
+      "CLIENT", // Default role for new users
+      acceptConditions.value
+    );
+
+    if (!userStore.error) {
+      emits("register");
+    }
+  } catch (error: any) {
+    console.error("Registration error:", error);
+    // Display network error message if there's a connection issue
+    if (error.code === "ERR_NETWORK") {
+      formError.value =
+        "Erreur de connexion au serveur. Veuillez vérifier votre connexion internet et réessayer.";
+    }
+  }
 };
 </script>
 
@@ -162,5 +208,11 @@ const register = () => {
       }
     }
   }
+}
+.error-message {
+  color: #ff4d4d;
+  margin: 10px 0;
+  font-size: 0.9rem;
+  text-align: center;
 }
 </style>
