@@ -51,6 +51,7 @@
           Total
           <span class="sort-icon">{{ getSortIcon("totalAmount") }}</span>
         </th>
+        <th>Date maximale</th>
         <th>Statut</th>
         <th>Document</th>
         <th>Action</th>
@@ -61,10 +62,18 @@
         <td>{{ formatDate(order.orderDate) }}</td>
         <td>{{ order.orderNumber }}</td>
         <td>{{ order.itemName }}</td>
-        <td>{{ formatPrice(order.totalAmount - order.buyerProtection) }}</td>
+        <td>
+          {{
+            formatPrice((order.totalAmount - order.buyerProtection).toString())
+          }}
+        </td>
         <td>{{ formatPrice(order.buyerProtection) }}</td>
         <td>
           {{ formatPrice(order.totalAmount) }}
+        </td>
+
+        <td class="limit-date">
+          <p>{{ getLimitDate(order) }}</p>
         </td>
         <td>
           <div
@@ -92,42 +101,38 @@
         </td>
         <td class="documents">
           <div class="buttons-wrapper">
-            <a
-              :href="`http://localhost:3001/api/documents/order/${order.id}/shippingLabel`"
-            >
-              <DefaultButton
-                iconLeft="tag01"
-                fit
-                transparent
-                iconOnly
-                tooltip="Bon de livraison"
-              />
-            </a>
-            <a
-              :href="`http://localhost:3001/api/documents/order/${order.id}/returnForm`"
-            >
-              <DefaultButton
-                iconLeft="truckReturn01"
-                fit
-                transparent
-                iconOnly
-                tooltip="Bon de retour"
-              />
-            </a>
-            <a
-              :href="`http://localhost:3001/api/documents/order/${order.id}/invoice`"
-            >
-              <DefaultButton
-                iconLeft="receipt"
-                fit
-                transparent
-                iconOnly
-                tooltip="Facture"
-              />
-            </a>
+            <DefaultButton
+              iconLeft="tag01"
+              fit
+              transparent
+              iconOnly
+              tooltip="Bon de livraison"
+              :loading="loadingDocs[`${order.id}-shippingLabel`]"
+              :disabled="loadingDocs[`${order.id}-shippingLabel`]"
+              @click="downloadDocument(order.id, 'shippingLabel')"
+            />
+            <DefaultButton
+              iconLeft="truckReturn01"
+              fit
+              transparent
+              iconOnly
+              tooltip="Bon de retour"
+              :loading="loadingDocs[`${order.id}-returnForm`]"
+              :disabled="loadingDocs[`${order.id}-returnForm`]"
+              @click="downloadDocument(order.id, 'returnForm')"
+            />
+            <DefaultButton
+              iconLeft="receipt"
+              fit
+              transparent
+              iconOnly
+              tooltip="Facture"
+              :loading="loadingDocs[`${order.id}-invoice`]"
+              :disabled="loadingDocs[`${order.id}-invoice`]"
+              @click="downloadDocument(order.id, 'invoice')"
+            />
           </div>
         </td>
-
         <td>
           <ContextMenuButton
             text=""
@@ -145,27 +150,17 @@
             :current-order="order"
             position="left"
           />
-          <!-- <DefaultButton
-            v-else
-            :text="order.status === '1' ? 'Remettre en attente' : 'Expédiée'"
-            :iconLeft="order.status === '1' ? 'warning01' : 'tick01'"
-            fit
-            transparent
-            iconOnly
-            :tooltip="
-              order.status === '1'
-                ? 'Remettre en attente'
-                : 'Marquer comme expédiée'
-            "
-            @click="
-              handleStatusChange(order.id, order.status === '1' ? '0' : '1')
-            "
-          /> -->
         </td>
       </tr>
     </tbody>
     <tbody v-else>
       <tr v-for="index in 3" :key="index">
+        <td>
+          <div class="loading-text"></div>
+        </td>
+        <td>
+          <div class="loading-text"></div>
+        </td>
         <td>
           <div class="loading-text"></div>
         </td>
@@ -270,6 +265,10 @@
             <p>{{ formatDate(order.orderDate) }}</p>
           </div>
           <div class="customer-wrapper">
+            <div class="customer-name" v-if="order.Customer.name">
+              <Icon name="user01" />
+              <p>{{ cleanName(order.Customer.name) }}</p>
+            </div>
             <div class="address-wrapper">
               <Icon name="location01" />
               <p>{{ formatAddress(order.Customer.address) }}</p>
@@ -309,64 +308,35 @@
           />
         </div>
 
-        <!-- <p class="documents">
-          <div class="buttons-wrapper">
-            <a
-              :href="`http://localhost:3001/api/documents/order/${order.id}/shippingLabel`"
-            >
-              <DefaultButton
-                iconLeft="tag01"
-                fit
-                transparent
-                iconOnly
-                tooltip="Bon de livraison"
-              />
-            </a>
-            <a
-              :href="`http://localhost:3001/api/documents/order/${order.id}/returnForm`"
-            >
-              <DefaultButton
-                iconLeft="truckReturn01"
-                fit
-                transparent
-                iconOnly
-                tooltip="Bon de retour"
-              />
-            </a>
-            <a
-              :href="`http://localhost:3001/api/documents/order/${order.id}/invoice`"
-            >
-              <DefaultButton
-                iconLeft="receipt"
-                fit
-                transparent
-                iconOnly
-                tooltip="Facture"
-              />
-            </a>
-          </div>
-        </p>
-
-        <p>
+        <div class="documents-wrapper">
           <DefaultButton
-            v-if="order.status === '0'"
-            text=""
-            iconLeft="more01"
+            iconLeft="tag01"
             fit
             transparent
-            iconOnly
-            tooltip="Afficher les options"
+            text="Bon de livraison"
+            :loading="loadingDocs[`${order.id}-shippingLabel`]"
+            :disabled="loadingDocs[`${order.id}-shippingLabel`]"
+            @click="downloadDocument(order.id, 'shippingLabel')"
           />
           <DefaultButton
-            v-else
-            text="Expédiée"
-            iconLeft="tick01"
+            iconLeft="truckReturn01"
             fit
             transparent
-            iconOnly
-            tooltip="Marquer la commande comme expédiée"
+            text="Bon de retour"
+            :loading="loadingDocs[`${order.id}-returnForm`]"
+            :disabled="loadingDocs[`${order.id}-returnForm`]"
+            @click="downloadDocument(order.id, 'returnForm')"
           />
-        </p> -->
+          <DefaultButton
+            iconLeft="receipt"
+            fit
+            transparent
+            text="Facture"
+            :loading="loadingDocs[`${order.id}-invoice`]"
+            :disabled="loadingDocs[`${order.id}-invoice`]"
+            @click="downloadDocument(order.id, 'invoice')"
+          />
+        </div>
       </article>
     </section>
   </div>
@@ -401,6 +371,14 @@ const handleOptionSelected = () => {
   }, 100);
 };
 
+const getLimitDate = (order: any) => {
+  const orderDate = new Date(order.orderDate);
+  const limitDate = new Date(orderDate);
+  limitDate.setDate(orderDate.getDate() + 4);
+
+  return limitDate.toLocaleDateString("fr-FR");
+};
+
 const menuOptions = ref<MenuCategory[]>([
   {
     category: "Action",
@@ -425,19 +403,19 @@ const menuOptions = ref<MenuCategory[]>([
       {
         icon: "receipt",
         label: "Télécharger la facture",
-        action: () => console.log("Éditer"),
+        action: (order: any) => downloadDocument(order.id, "invoice"),
         category: "Documents",
       },
       {
         icon: "truckReturn01",
         label: "Télécharger le bon de retour",
-        action: () => console.log("Éditer"),
+        action: (order: any) => downloadDocument(order.id, "returnForm"),
         category: "Documents",
       },
       {
         icon: "tag01",
         label: "Télécharger le bon de livraison",
-        action: () => console.log("Éditer"),
+        action: (order: any) => downloadDocument(order.id, "shippingLabel"),
         category: "Documents",
       },
     ],
@@ -459,9 +437,30 @@ const menuOptions = ref<MenuCategory[]>([
 
 const handleStatusChange = async (orderId: string, newStatus: string) => {
   try {
+    // Add loading state for status changes
+    const order = orderStore.orders.find((order) => order.id === orderId);
+    if (!order) return;
+
+    // Create a loading key for this specific action
+    const loadingKey = `${orderId}-statusChange`;
+    loadingDocs.value[loadingKey] = true;
+
+    // Call store method to update status
     await orderStore.updateOrderStatus(orderId, newStatus);
+
+    // Check if order became late (status 2) after trying to set it to pending (status 0)
+    if (newStatus === "0" && order.status === "2") {
+      alert(
+        "Cette commande a dépassé sa date limite et a été marquée comme 'En retard'."
+      );
+    }
   } catch (error) {
     console.error("Erreur lors de la mise à jour du statut:", error);
+    alert("Erreur lors de la mise à jour du statut.");
+  } finally {
+    // Clear loading state
+    const loadingKey = `${orderId}-statusChange`;
+    loadingDocs.value[loadingKey] = false;
   }
 };
 
@@ -543,6 +542,18 @@ const formatPrice = (price: string) => {
   }).format(Number(price));
 };
 
+// Add function to clean customer names by removing asterisks
+const cleanName = (name: string) => {
+  if (!name) return "";
+
+  // Check if name is surrounded by asterisks
+  if (name.startsWith("*") && name.endsWith("*")) {
+    return name.slice(1, -1);
+  }
+  // Handle other cases
+  return name.replace(/\*/g, "");
+};
+
 const handleChangeView = (view: string) => {
   if (view === "list") {
     toggleButtonListActive.value = true;
@@ -550,6 +561,98 @@ const handleChangeView = (view: string) => {
   } else {
     toggleButtonListActive.value = false;
     toggleButtonCardActive.value = true;
+  }
+};
+
+// Track loading state for document downloads
+const loadingDocs = ref<{ [key: string]: boolean }>({});
+
+const downloadDocument = async (orderId: string, type: string) => {
+  try {
+    // Set loading state for this specific document
+    loadingDocs.value[`${orderId}-${type}`] = true;
+
+    // Check the document type to determine the right API endpoint
+    let url;
+
+    if (type === "invoice") {
+      url = `${
+        import.meta.env.VITE_API_BASE_URL || "http://localhost:3001"
+      }/api/invoices/${orderId}`;
+    } else {
+      // Use the existing endpoint for other document types
+      url = `${
+        import.meta.env.VITE_API_BASE_URL || "http://localhost:3001"
+      }/api/documents/sale/${orderId}/${type}`;
+    }
+
+    // For invoice, use a different approach since it may need to be generated
+    if (type === "invoice") {
+      console.log(`[INVOICE] Requesting invoice for order ${orderId}`);
+
+      // Make a direct fetch request - don't use HEAD for invoices
+      const response = await fetch(url, {
+        method: "GET",
+        credentials: "include", // Important for auth cookies
+      });
+
+      if (!response.ok) {
+        // Try to get error details from response
+        let errorMessage = `Erreur ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+          console.error(
+            `[INVOICE ERROR] ${errorMessage}`,
+            errorData.details || ""
+          );
+        } catch (e) {
+          // Response wasn't JSON, use default error
+        }
+
+        throw new Error(errorMessage);
+      }
+
+      // Get the blob from the response
+      const blob = await response.blob();
+
+      // Create a download link and trigger it
+      const downloadUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = `facture-${orderId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      // Clean up the object URL
+      setTimeout(() => {
+        URL.revokeObjectURL(downloadUrl);
+      }, 100);
+
+      return;
+    }
+
+    // For other documents, continue using the existing logic with HEAD check
+    const response = await fetch(url, {
+      method: "HEAD",
+      credentials: "include", // Include auth cookies
+    });
+
+    if (!response.ok) {
+      throw new Error(`Document not available: ${response.statusText}`);
+    }
+
+    // Open in new tab
+    window.open(url, "_blank");
+  } catch (error) {
+    console.error("Erreur lors du téléchargement:", error);
+    alert(
+      `Le document n'est pas disponible: ${error.message || "Erreur inconnue"}`
+    );
+  } finally {
+    // Always clear loading state when done, regardless of success or failure
+    loadingDocs.value[`${orderId}-${type}`] = false;
   }
 };
 </script>
@@ -683,7 +786,7 @@ const handleChangeView = (view: string) => {
           &.late {
             background-color: var(--color-bg-red);
             color: var(--color-red);
-            &status-indicator {
+            .status-indicator {
               background-color: var(--color-red);
             }
           }
@@ -755,7 +858,7 @@ const handleChangeView = (view: string) => {
         font-size: clamp(0.5rem, 0.7rem, 0.8rem);
         text-wrap: nowrap;
         &.waiting {
-          background-color: var(--color-bg-orange);
+          background-color: var (--color-bg-orange);
           color: var(--color-orange);
         }
         &.send {
@@ -838,6 +941,18 @@ const handleChangeView = (view: string) => {
         display: flex;
         flex-direction: column;
         gap: 18px;
+        .customer-name {
+          display: flex;
+          gap: 8px;
+          align-items: center;
+          margin-bottom: 8px;
+          .icon {
+            width: 20px;
+            height: 20px;
+            stroke: var(--color-primary);
+            fill: none;
+          }
+        }
         .address-wrapper {
           display: flex;
           gap: 8px;
@@ -866,6 +981,12 @@ const handleChangeView = (view: string) => {
       display: flex;
       justify-content: space-between;
       align-items: center;
+    }
+    .documents-wrapper {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
     }
   }
 }

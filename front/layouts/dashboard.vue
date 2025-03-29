@@ -17,7 +17,7 @@
           </Sidebar>
           <SidebarInset>
             <div class="flex flex-col w-full page-content-wrapper">
-              <header class="bg-white shadow-sm">
+              <!-- <header class="bg-white shadow-sm">
                 <nav
                   class="container mx-auto p-4 flex justify-between items-center"
                 >
@@ -38,7 +38,7 @@
                     </li>
                   </ul>
                 </nav>
-              </header>
+              </header> -->
 
               <div class="py-4 w-full page-content">
                 <slot />
@@ -118,7 +118,7 @@ const sidebarMenu = ref([
         title: "Gestion du stock",
         icon: "cardboard",
         to: "/app/inventaire",
-        access: true,
+        access: false,
       },
     ],
   },
@@ -142,7 +142,7 @@ const sidebarMenu = ref([
         title: "Parser",
         icon: "settings",
         to: "/app/test-parser",
-        access: true,
+        access: false,
       },
     ],
   },
@@ -159,7 +159,7 @@ const sidebarMenu = ref([
         title: "Paramètres",
         icon: "settings",
         to: "/app/parametres",
-        access: true,
+        access: false,
       },
       {
         title: "Se déconnecter",

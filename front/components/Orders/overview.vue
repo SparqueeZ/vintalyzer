@@ -75,7 +75,7 @@ const summaries = computed(() => {
       value: orderStore.loading
         ? "0"
         : ordersInSelectedDates.value
-            .filter((order) => order.status === "0")
+            .filter((order) => order.status === "0" || order.status === "2")
             .length.toString(),
       icon: "warningCircle",
       positive: "0",
@@ -102,6 +102,10 @@ const summaries = computed(() => {
     },
   ];
 });
+
+async function fetchOrders() {
+  await orderStore.fetchOrders();
+}
 </script>
 
 <style scoped lang="scss">

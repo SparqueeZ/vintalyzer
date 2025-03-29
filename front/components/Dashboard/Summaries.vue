@@ -12,7 +12,26 @@ const props = defineProps({
   selectedRange: Object,
 });
 
-const summaries = [
+// Computed property to filter orders by selected date range
+const ordersInSelectedDates = computed(() => {
+  if (
+    !props.selectedRange ||
+    !props.selectedRange.start ||
+    !props.selectedRange.end
+  ) {
+    return orderStore.orders;
+  }
+
+  return orderStore.orders.filter((order) => {
+    const orderDate = new Date(order.orderDate);
+    return (
+      orderDate >= props.selectedRange.start &&
+      orderDate <= props.selectedRange.end
+    );
+  });
+});
+
+const summaries = ref([
   {
     title: "Nombre de ventes",
     value: saleStore.sales.length,
@@ -29,19 +48,28 @@ const summaries = [
   },
   {
     title: "Commandes à traiter",
-    value: orderStore.orders.filter((order) => order.status === "0").length,
+    value: computed(
+      () =>
+        ordersInSelectedDates.value.filter(
+          (order) => order.status === "0" || order.status === "2"
+        ).length
+    ),
     icon: "warningCircle",
     positive: "0",
     negative: "0",
   },
   {
     title: "Commandes expédiées",
-    value: orderStore.orders.filter((order) => order.status === "1").length,
+    value: computed(
+      () =>
+        ordersInSelectedDates.value.filter((order) => order.status === "1")
+          .length
+    ),
     icon: "deliveryTruck",
     positive: "0",
     negative: "0",
   },
-];
+]);
 </script>
 
 <style scoped lang="scss">

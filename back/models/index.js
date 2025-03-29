@@ -4,6 +4,7 @@ const Order = require("./orderModel");
 const Customer = require("./customerModel");
 const ReturnForm = require("./returnFormModel");
 const ShippingLabel = require("./shippingLabelModel");
+const Invoice = require("./invoiceModel");
 const ShopModel = require("./dashboard/shopModel");
 const ExpenseModel = require("./dashboard/expenseModel");
 const SaleModel = require("./dashboard/saleModel");
@@ -25,6 +26,7 @@ const models = {
   Customer,
   ReturnForm,
   ShippingLabel,
+  Invoice,
   ShopModel,
   ExpenseModel,
   SaleModel,
@@ -53,15 +55,30 @@ Order.belongsTo(User, {
 });
 Order.belongsTo(Customer, {
   foreignKey: "customerId",
+  as: "Customer",
 });
 Customer.hasMany(Order, {
   foreignKey: "customerId",
 });
 Order.belongsTo(ReturnForm, {
   foreignKey: "returnFormId",
+  as: "ReturnForm",
+});
+ReturnForm.hasOne(Order, {
+  foreignKey: "returnFormId",
 });
 Order.belongsTo(ShippingLabel, {
   foreignKey: "shippingLabelId",
+  as: "ShippingLabel",
+});
+ShippingLabel.hasOne(Order, {
+  foreignKey: "shippingLabelId",
+});
+Order.hasOne(Invoice, {
+  foreignKey: "orderId",
+});
+Invoice.belongsTo(Order, {
+  foreignKey: "orderId",
 });
 
 User.hasMany(ShopModel, { foreignKey: "userId" });

@@ -281,6 +281,9 @@ const ordersRoutes = require("./routes/ordersRoutes.js");
 const salesRoutes = require("./routes/salesRoutes.js");
 const subscriptionRoutes = require("./routes/subscriptionsRoutes.js");
 const extensionRoutes = require("./routes/extensionRoutes.js");
+const filesRoutes = require("./routes/filesRoutes.js");
+const invoiceRoutes = require("./routes/invoiceRoutes.js");
+const maintenanceRoutes = require("./routes/maintenanceRoutes.js");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/documents", documentRoutes);
@@ -288,8 +291,32 @@ app.use("/api/orders", ordersRoutes);
 app.use("/api/sales", salesRoutes);
 app.use("/api/subscriptions", subscriptionRoutes);
 app.use("/api/ext", extensionRoutes);
+app.use("/api/files", filesRoutes);
+app.use("/api/invoices", invoiceRoutes);
+app.use("/api/maintenance", maintenanceRoutes);
 
-// app.use("/api/ext/data");
+// Schedule maintenance tasks
+const maintenanceController = require("./controllers/maintenanceController");
+
+// Sync documents with S3 every 30 minutes
+setInterval(async () => {
+  try {
+    console.log("[SCHEDULED] Starting document sync with S3");
+    await maintenanceController.syncDocumentsWithS3();
+  } catch (error) {
+    console.error("[SCHEDULED ERROR] Failed to sync documents with S3:", error);
+  }
+}, 30 * 60 * 1000); // 30 minutes
+
+// Run document sync at startup to ensure data is consistent
+(async () => {
+  try {
+    console.log("[STARTUP] Running initial document sync with S3");
+    await maintenanceController.syncDocumentsWithS3();
+  } catch (error) {
+    console.error("[STARTUP ERROR] Failed to sync documents with S3:", error);
+  }
+})();
 
 app.get("/api/detect-emails", async (req, res) => {
   try {
@@ -339,6 +366,19 @@ app.get("/", (req, res) => {
 setInterval(async () => {
   await emailDetectionController.testEmailConnection();
 }, process.env.EMAIL_DETECTION_INTERVAL * 60 * 1000);
+(async () => {
+  try {
+    await emailDetectionController.testEmailConnection();
+    console.log(
+      "[SUCCESS] Email detection process completed successfully at server startup."
+    );
+  } catch (error) {
+    console.error(
+      "[ERROR] Error during email detection process at server startup:",
+      error.message
+    );
+  }
+})();
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

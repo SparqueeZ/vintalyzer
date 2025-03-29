@@ -9,8 +9,10 @@ router.get("/all", authenticateToken, ordersController.getAllOrders);
 
 // Route pour obtenir les ventes de l'utilisateur connecté
 router.get("/", authenticateToken, ordersController.getUserOrders);
+
+// Update order status (using orderId in the path - must match what's used in the controller)
 router.put(
-  "/:id/status",
+  "/:orderId/status",
   authenticateToken,
   ordersController.updateOrderStatus
 );

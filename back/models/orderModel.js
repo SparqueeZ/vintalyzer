@@ -56,16 +56,16 @@ const Order = sequelize.define("Order", {
   updatedAt: DataTypes.DATE,
 });
 
-// Modification des associations
-Order.associate = (models) => {
-  Order.belongsTo(models.ReturnForm, {
-    foreignKey: "returnFormId",
-    as: "ReturnForm", // Majuscule au début
-  });
-  Order.belongsTo(models.ShippingLabel, {
-    foreignKey: "shippingLabelId",
-    as: "ShippingLabel", // Majuscule au début
-  });
-};
+// Remove this association method as it's now handled in models/index.js
+// Order.associate = (models) => {
+//   Order.belongsTo(models.ReturnForm, {
+//     foreignKey: "returnFormId",
+//     as: "ReturnForm",
+//   });
+//   Order.belongsTo(models.ShippingLabel, {
+//     foreignKey: "shippingLabelId",
+//     as: "ShippingLabel",
+//   });
+// };
 
 module.exports = Order;

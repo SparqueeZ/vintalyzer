@@ -153,7 +153,7 @@ const stars = computed(() => {
     // min-width: 45%;
   }
   @media only screen and (min-width: 1824px) {
-    min-width: 300px;
+    min-width: 550px;
   }
 
   .title-wrapper {

@@ -14,39 +14,6 @@
       />
     </div>
     <OrdersOverview :selectedRange="userStore.selectedRange" />
-    <!-- <section class="summaries-wrapper">
-      <OverviewCards
-        :content="summary"
-        splitFour
-        v-for="summary in summaries.filter(
-          (summary) => summary.title !== 'Rafraichir les commandes'
-        )"
-      />
-      <OverviewCards
-        splitFour
-        :content="
-          summaries.find(
-            (summary) => summary.title === 'Rafraichir les commandes'
-          ) || {
-            title: '',
-            value: '',
-            icon: '',
-            positive: '',
-            negative: '',
-            func: () => {},
-          }
-        "
-      >
-        <defaultButton
-          text="Recharger"
-          iconLeft="refresh01"
-          transparent
-          :loading="orderStore.loading"
-          :disabled="orderStore.loading"
-          @click="orderStore.fetchOrders()"
-        />
-      </OverviewCards>
-    </section> -->
 
     <div class="orders">
       <OrdersList
@@ -101,26 +68,21 @@ definePageMeta({
   middleware: ["auth"],
 });
 
+// Remove or comment out the unused function since we're handling downloads in orderList.vue now
+/* 
 type DocumentType = "shippingLabel" | "returnForm" | "invoice";
 
 const downloadDocument = async (orderId: string, type: string) => {
   try {
-    // @click="downloadDocument(order.id, 'shippingLabel')"
-    //
-    // const response = await fetch(`/api/documents/order/${orderId}/${type}`);
-    // const blob = await response.blob();
-    // const url = window.URL.createObjectURL(blob);
-    // const a = document.createElement("a");
-    // a.href = url;
-    // a.download = `${type}-${orderId}.pdf`;
-    // document.body.appendChild(a);
-    // a.click();
-    // window.URL.revokeObjectURL(url);
-    // a.remove();
-    // router.push(`http://localhost:3001/api/documents/order/${orderId}/${type}`);
+    // Code removed as it's now implemented in orderList.vue
   } catch (error) {
     console.error("Erreur lors du téléchargement:", error);
   }
+};
+*/
+
+const fetchOrders = () => {
+  return orderStore.fetchOrders();
 };
 </script>
 

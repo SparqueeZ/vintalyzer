@@ -34,6 +34,10 @@ const ShippingLabel = sequelize.define("ShippingLabel", {
     type: DataTypes.DATE,
     allowNull: false,
   },
+  isValid: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,
+  },
 });
 
 module.exports = ShippingLabel;

@@ -34,6 +34,10 @@ const ReturnForm = sequelize.define("ReturnForm", {
     type: DataTypes.DATE,
     allowNull: false,
   },
+  isValid: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,
+  },
 });
 
 module.exports = ReturnForm;

@@ -336,42 +336,65 @@ async function testEmailConnection() {
     for (const [orderNumber, orderData] of orders.entries()) {
       if (orderData.orderEmail && orderData.returnFormInfo) {
         try {
-          const forwardedFrom = orderData.orderEmail.from.text;
+          console.log(
+            `[EMAIL DETECTION] Starting to process order #${orderNumber}`
+          );
 
-          if (!orderData.orderInfo) {
-            printError(
-              `Commande ${orderNumber}: Informations d'acheteur manquantes`
+          // Extract the seller email from returnFormInfo - this is the user email we need
+          const sellerEmail = orderData.returnFormInfo.sellerAddress.email;
+
+          if (!sellerEmail) {
+            console.error(
+              `[ERROR] No seller email found for order #${orderNumber}`
             );
-            printOrderDetails(orderNumber, orderData);
             errorCount++;
             continue;
           }
 
-          const order = await documentProcessingService.processOrderDocuments(
-            orderData,
-            forwardedFrom
+          console.log(
+            `[EMAIL DETECTION] Processing for seller: ${sellerEmail}`
           );
 
+          // Process the order attachments with seller email
+          const processedOrder =
+            await documentProcessingService.processOrderDocuments(
+              orderData,
+              sellerEmail // Pass the seller's email instead of undefined userEmail
+            );
+
           processedCount++;
-          printSuccess(
-            `Commande ${orderNumber}: traitée avec succès (ID: ${order.id})`
+          console.log(
+            `[EMAIL DETECTION] Successfully processed order #${orderNumber}, created order ID: ${processedOrder.id}`
+          );
+          console.log(
+            `[EMAIL DETECTION] ReturnForm ID: ${
+              processedOrder.returnFormId || "none"
+            }, ShippingLabel ID: ${processedOrder.shippingLabelId || "none"}`
           );
         } catch (error) {
-          printError(`Commande ${orderNumber}: Erreur - ${error.message}`);
-          printOrderDetails(orderNumber, orderData);
           errorCount++;
+          console.error(
+            `[EMAIL DETECTION ERROR] Failed to process order #${orderNumber}: ${error.message}`
+          );
+          printOrderDetails(orderNumber, orderData);
         }
+      } else {
+        skippedCount++;
+        console.log(
+          `[EMAIL DETECTION] Skipping incomplete order #${orderNumber}`
+        );
       }
     }
 
     printSuccess(
-      `Traitement terminé - ${processedCount} nouvelles commandes traitées`
+      `Traitement terminé - ${processedCount} nouvelles commandes traitées, ${skippedCount} ignorées`
     );
     if (errorCount > 0) {
       printError(`${errorCount} commandes en erreur`);
     }
 
     await connection.end();
+    return { processedCount, errorCount, skippedCount };
   } catch (error) {
     printError(`Erreur critique: ${error.message}`);
     throw error;
