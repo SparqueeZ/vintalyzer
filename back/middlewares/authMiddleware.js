@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 const authenticateToken = (req, res, next) => {
   const token = req.cookies.token;
@@ -6,7 +7,22 @@ const authenticateToken = (req, res, next) => {
     return res.status(401).json({ message: "No token provided" });
   }
 
-  jwt.verify(token, "jwtsecretdelamortquitue", (err, user) => {
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ message: "Invalid token" });
+    }
+    req.user = user;
+    next();
+  });
+};
+
+const authenticateExtToken = (req, res, next) => {
+  const token = req.cookies.token;
+  if (!token) {
+    return res.status(401).json({ message: "No token provided" });
+  }
+
+  jwt.verify(token, `${process.env.JWT_SECRET}ext`, (err, user) => {
     if (err) {
       return res.status(403).json({ message: "Invalid token" });
     }

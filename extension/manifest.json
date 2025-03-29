@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Vinted Analyzer (rev2)",
+  "version": "1.0",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "http://localhost:3001/*",
+    "https://www.vinted.fr/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon.svg",
+      "48": "icon.svg",
+      "128": "icon.svg"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://localhost:3000/*",
+        "http://localhost:3001/*",
+        "http://192.168.1.11:3001/*",
+        "http://192.168.1.11:3000/*",
+        "https://www.vinted.fr/*"
+      ],
+      "js": ["content-script.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
